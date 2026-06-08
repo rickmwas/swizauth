@@ -1,38 +1,42 @@
-# Memory — Phase 1: Database & Core Setup
+# Memory — Phase 2: Go Auth Engine Scaffolding & Core APIs
 
-Last updated: 2026-06-08T19:14:30+03:00
+Last updated: 2026-06-08T23:38:00+03:00
 
 ## What was built
 
-- Verified local environment containerization inside `docker-compose.yml` for PostgreSQL 16 on port 5432 and Redis 7 on port 6379.
-- Created `migrations/000001_init_schema.up.sql` defining multi-tenant isolated schemas (`auth`, `developer`, `audit`, `security`), tables, composite unique constraints, soft deletes (`deleted_at` on `auth.users`), and 40+ database indexes.
-- Created `migrations/000001_init_schema.down.sql` cleanly dropping all entities in reverse dependency order.
-- Initialized local git repository, added remote `origin` pointing to `https://github.com/rickmwas/swizauth.git`, committed all phase 1 assets, and pushed to remote `main` and `dev` branches.
-- Documented repository git branching policy under section 3 of `agents.md`.
+- **Verification, Reset, and MFA Workflows (Phase 2.3):**
+  - Confirmed and enabled encryption keys (`MFA_ENCRYPTION_KEY` in `.env`), cryptography [crypto_service.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/service/crypto_service.go), and MFA credentials.
+  - Built [verification_repository.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/repository/verification_repository.go) (token cycles) and [mfa_repository.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/repository/mfa_repository.go) (MFA & recovery codes).
+  - Implemented token rotation (mitigating replays by revoking the whole session), email verifications, password resets, and MFA setup/verification.
+- **Security & Rate Limiting (Phase 2.4):**
+  - Added `INTERNAL_API_SECRET` configuration in [.env](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/.env) and required it on load in [config.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/domain/config.go).
+  - Implemented [rate_limit.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/delivery/middleware/rate_limit.go) executing an atomic Redis Lua Token Bucket script, returning rate-limit headers.
+  - Implemented [internal_auth.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/delivery/middleware/internal_auth.go) GIN middleware validating internal service bearer tokens.
+  - Added internal verify payload in [user.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/domain/user.go) and route handler `InternalVerifyToken` in [auth_handler.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/delivery/http/auth_handler.go).
+  - Wired routes, internal endpoints, and rate-limiting rules (Login 10/min, Register 5/min, Reset request 5/min) in [main.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/cmd/auth/main.go).
 
 ## Decisions made
 
-- **Owner-User Circular Dependency:** Created the `organizations` table with a nullable `owner_id UUID` column, then defined the `auth.users` table referencing `organizations.id`, and finally added the foreign key constraint on `organizations.owner_id` via `ALTER TABLE` to avoid circular creation locks.
-- **UUIDv7 Responsibility:** Time-sorted UUIDv7 generation is delegated to application services (Go and NestJS). The database uses standard `UUID` types with no database-level defaults.
-- **Composite Unique Constraints:** Enforced email and username uniqueness per tenant rather than globally using `UNIQUE (organization_id, email)` and `UNIQUE (organization_id, username)`.
-- **Git Branching Policy:** Adopted the strategy to develop active features on the `dev` branch and merge changes to `main` only when stable/production-ready.
+- **Atomic Redis Lua Limiting:** Implemented the token bucket in a Lua script to prevent race conditions during high concurrent traffic.
+- **Rate Limit Headers:** Standard headers (`X-RateLimit-*`) are injected into both throttled and successful requests.
+- **IP & User rate-limit mapping:** Falls back to User ID rate limiting if the request is authenticated, else utilizes the Client IP.
+- **Service-to-Service Secret Verification:** Created a separate `/api/v1/internal` route group guarded by a shared symmetric token `INTERNAL_API_SECRET`.
 
 ## Problems solved
 
-- **Docker Startup Error:** Resolved a stopped Docker Desktop daemon blocker on the local machine by launching `C:\Program Files\Docker\Docker\Docker Desktop.exe` via PowerShell, checking backend WSL2 health, and verifying container state.
-- **PowerShell Pipe Redirection:** Used `Get-Content <file> -Raw` in PowerShell to pipe the schema scripts into the Docker container `psql` shell safely.
+- **Float/Number conversions in Lua-Go:** Multiplied float tokens by 1000 in Lua script before returning to Go as an `int64` to prevent float conversions issues.
+- **Unused Import & Return bugs:** Fixed key parsing return count and unused import errors.
 
 ## Current state
 
-- PostgreSQL and Redis containers are healthy and running locally.
-- DDL Up and Down migrations have been successfully verified and applied to the database instance.
-- Redis responds successfully to `ping` with `PONG`.
-- `progress-tracker.md` and `build-plan.md` have been updated to reflect Phase 1 completion.
-- Local repository is on the `dev` branch tracking remote `origin/dev`.
+- Phase 2.1, 2.2, 2.3, and 2.4 are completely implemented, verified, and stable.
+- The `auth-service` Go codebase compiles cleanly and passes builds.
 
 ## Next session starts with
 
-- **Phase 2: Go Auth Engine (`auth-service`)**: Setting up Go project scaffolding, installing dependencies (`gin`, `pgx`, `redis`), and implementing core middleware (JSON logger, CORS, request ID, global panic recovery).
+- **Phase 3: NestJS Admin API (`admin-service`)**
+  - Scaffold NestJS project and prisma configurations.
+  - Implement Organization CRUD routes and Invitation workflows.
 
 ## Open questions
 
