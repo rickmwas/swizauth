@@ -1,6 +1,6 @@
-# Memory — Phase 2: Go Auth Engine Scaffolding & Core APIs
+# Memory — Go Auth Engine Scaffolding & Core APIs
 
-Last updated: 2026-06-08T23:38:00+03:00
+Last updated: 2026-06-08T23:50:00+03:00
 
 ## What was built
 
@@ -31,6 +31,8 @@ Last updated: 2026-06-08T23:38:00+03:00
 
 - Phase 2.1, 2.2, 2.3, and 2.4 are completely implemented, verified, and stable.
 - The `auth-service` Go codebase compiles cleanly and passes builds.
+- The E2E integration tester successfully verifies all 15 test suites against running PG and Redis.
+- Changes are fully committed and pushed to remote `dev` branch.
 
 ## Next session starts with
 
@@ -40,4 +42,4 @@ Last updated: 2026-06-08T23:38:00+03:00
 
 ## Open questions
 
-- None.
+None.
