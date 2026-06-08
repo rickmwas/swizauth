@@ -31,3 +31,10 @@ You must utilize the 5 core agent skills installed under `.agents/skills/` durin
   - TypeScript/Go typing standards.
 - **`recover`** (under `.agents/skills/recover`): Trigger this skill if compilation, linting, or database connections fail. Use it to diagnose and resolve errors systematically.
 - **`imprint`** (under `.agents/skills/imprint`): Invoke this skill after developing or tweaking visual components to capture new patterns in `context/ui-registry.md`.
+
+---
+
+## 3. Git Branching & Merging Policy
+- **Development Branch (`dev`):** All active development, feature implementations, and testing must take place on the `dev` branch.
+- **Main Branch (`main`):** Changes must be merged into the `main` branch only after a feature is fully tested, verified stable, and ready for production shipping.
+
