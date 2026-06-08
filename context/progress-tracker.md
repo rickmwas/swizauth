@@ -18,12 +18,12 @@ Tracks the implementation status of features and services.
 - [x] Service-to-service internal API auth handlers
 
 ## Phase 3: NestJS Admin API (`admin-service`)
-- [ ] Organization CRUD routes
-- [ ] Membership Invitation and Acceptance flow
-- [ ] User management routing & roles assignment
-- [ ] Application configuration API
-- [ ] API Key generation & management
-- [ ] Audit logs and query filters endpoint
+- [x] Organization CRUD routes
+- [x] Membership Invitation and Acceptance flow
+- [x] User management routing & roles assignment
+- [x] Application configuration API
+- [x] API Key generation & management
+- [x] Audit logs and query filters endpoint
 
 ## Phase 4: Next.js Dashboard & Auth Portal
 - [ ] Authentication Screens (Login, Register, Password Reset)

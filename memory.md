@@ -1,45 +1,34 @@
-# Memory — Go Auth Engine Scaffolding & Core APIs
+# Memory — NestJS Admin API Implementation & Verification
 
-Last updated: 2026-06-08T23:50:00+03:00
+Last updated: 2026-06-09T01:21:00+03:00
 
 ## What was built
 
-- **Verification, Reset, and MFA Workflows (Phase 2.3):**
-  - Confirmed and enabled encryption keys (`MFA_ENCRYPTION_KEY` in `.env`), cryptography [crypto_service.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/service/crypto_service.go), and MFA credentials.
-  - Built [verification_repository.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/repository/verification_repository.go) (token cycles) and [mfa_repository.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/repository/mfa_repository.go) (MFA & recovery codes).
-  - Implemented token rotation (mitigating replays by revoking the whole session), email verifications, password resets, and MFA setup/verification.
-- **Security & Rate Limiting (Phase 2.4):**
-  - Added `INTERNAL_API_SECRET` configuration in [.env](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/.env) and required it on load in [config.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/domain/config.go).
-  - Implemented [rate_limit.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/delivery/middleware/rate_limit.go) executing an atomic Redis Lua Token Bucket script, returning rate-limit headers.
-  - Implemented [internal_auth.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/delivery/middleware/internal_auth.go) GIN middleware validating internal service bearer tokens.
-  - Added internal verify payload in [user.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/domain/user.go) and route handler `InternalVerifyToken` in [auth_handler.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/internal/delivery/http/auth_handler.go).
-  - Wired routes, internal endpoints, and rate-limiting rules (Login 10/min, Register 5/min, Reset request 5/min) in [main.go](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/auth-service/cmd/auth/main.go).
+- **NestJS admin-service (`admin-service`):** Fully implemented the 5 core modules (Memberships, RBAC, Applications, API Keys, and Audit Logs) alongside global setup (AppModule, HttpExceptionFilter, AuthGuard, PermissionsGuard, GetUser decorator, and Prisma setup).
+- **ESLint & TypeScript compliance:** Resolved all code standard lints, formatting, and compiler issues. ESLint checks pass with 0 errors and 0 warnings.
+- **Verification:** Ran successful compilation and test suite (Jest unit tests pass).
 
 ## Decisions made
 
-- **Atomic Redis Lua Limiting:** Implemented the token bucket in a Lua script to prevent race conditions during high concurrent traffic.
-- **Rate Limit Headers:** Standard headers (`X-RateLimit-*`) are injected into both throttled and successful requests.
-- **IP & User rate-limit mapping:** Falls back to User ID rate limiting if the request is authenticated, else utilizes the Client IP.
-- **Service-to-Service Secret Verification:** Created a separate `/api/v1/internal` route group guarded by a shared symmetric token `INTERNAL_API_SECRET`.
+- **Multi-Tenant Scoping:** Shared database, shared schema model where every route is scoped to the organization ID extracted from the authenticated user token context.
+- **NestJS parameter decorator typings:** Parameterized `ctx.switchToHttp().getRequest<T>()` rather than using `as T` type assertions to bypass ESLint `no-unnecessary-type-assertion` checks while maintaining type-safe property access.
+- **Prisma update typings:** Cast raw update payloads to `Prisma.organizationsUpdateInput` (and other entities) to prevent ESLint `no-unsafe-assignment` checks on untyped objects.
 
 ## Problems solved
 
-- **Float/Number conversions in Lua-Go:** Multiplied float tokens by 1000 in Lua script before returning to Go as an `int64` to prevent float conversions issues.
-- **Unused Import & Return bugs:** Fixed key parsing return count and unused import errors.
+- **Decorator Metadata Interface Type Errors (TS1272):** Fixed interfaces (e.g. `AuthenticatedUser`) used in custom decorators by converting them to `import type` imports, preventing TypeScript from emitting invalid runtime references.
+- **Unsafe Any Assignment & Member Access:** Explicitly parameterized all `HttpException` and fetch responses, and mapped Prisma unique constraint error targets cleanly.
 
 ## Current state
 
-- Phase 2.1, 2.2, 2.3, and 2.4 are completely implemented, verified, and stable.
-- The `auth-service` Go codebase compiles cleanly and passes builds.
-- The E2E integration tester successfully verifies all 15 test suites against running PG and Redis.
-- Changes are fully committed and pushed to remote `dev` branch.
+- All Phase 3 components for the NestJS Admin API (`admin-service`) are fully built, formatted, and compile cleanly.
+- Unit tests (`npm run test`) pass.
+- Lint check (`npx eslint "src/**/*.ts"`) passes with zero warnings or errors.
 
 ## Next session starts with
 
-- **Phase 3: NestJS Admin API (`admin-service`)**
-  - Scaffold NestJS project and prisma configurations.
-  - Implement Organization CRUD routes and Invitation workflows.
+- **Phase 4: Next.js Dashboard & Auth Portal:** Setup the Next.js frontend application (`dashboard`), configure the design system tokens matching `context/ui-tokens.md`, and build the split-screen auth layouts.
 
 ## Open questions
 
-None.
+- None.
