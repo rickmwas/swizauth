@@ -20,3 +20,10 @@ yarn-error.log*
 # System files
 .DS_Store
 Thumbs.db
+
+# Go build binaries & certificates
+/auth-service/certs/*.pem
+/auth-service/auth-service
+/auth-service/auth-service.exe
+/auth-service/bin/
+

@@ -1,0 +1,310 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["audit", "auth", "developer", "public", "security"]
+}
+
+model audit_logs {
+  id              String        @id @db.Uuid
+  organization_id String        @db.Uuid
+  user_id         String?       @db.Uuid
+  action          String        @db.VarChar(255)
+  resource        String        @db.VarChar(255)
+  resource_id     String?       @db.Uuid
+  ip_address      String?       @db.Inet
+  metadata        Json          @default("{}")
+  created_at      DateTime      @db.Timestamptz(6)
+  organizations   organizations @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users?        @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([action], map: "idx_audit_logs_action")
+  @@index([created_at], map: "idx_audit_logs_created_at")
+  @@index([organization_id], map: "idx_audit_logs_org_id")
+  @@index([user_id], map: "idx_audit_logs_user_id")
+  @@schema("audit")
+}
+
+model email_verification_tokens {
+  id         String   @id @db.Uuid
+  user_id    String   @db.Uuid
+  token_hash String
+  expires_at DateTime @db.Timestamptz(6)
+  used       Boolean  @default(false)
+  created_at DateTime @db.Timestamptz(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_email_verification_tokens_expires_at")
+  @@index([user_id], map: "idx_email_verification_tokens_user_id")
+  @@schema("auth")
+}
+
+model mfa_configurations {
+  id                 String               @id @db.Uuid
+  user_id            String               @db.Uuid
+  method             String               @db.VarChar(100)
+  secret             String
+  enabled            Boolean              @default(false)
+  created_at         DateTime             @db.Timestamptz(6)
+  updated_at         DateTime             @db.Timestamptz(6)
+  users              users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  mfa_recovery_codes mfa_recovery_codes[]
+
+  @@index([enabled], map: "idx_mfa_configurations_enabled")
+  @@index([user_id], map: "idx_mfa_configurations_user_id")
+  @@schema("auth")
+}
+
+model mfa_recovery_codes {
+  id                   String             @id @db.Uuid
+  mfa_configuration_id String             @db.Uuid
+  code_hash            String
+  used                 Boolean            @default(false)
+  created_at           DateTime           @db.Timestamptz(6)
+  mfa_configurations   mfa_configurations @relation(fields: [mfa_configuration_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([mfa_configuration_id], map: "idx_mfa_recovery_codes_config_id")
+  @@index([used], map: "idx_mfa_recovery_codes_used")
+  @@schema("auth")
+}
+
+model password_reset_tokens {
+  id         String   @id @db.Uuid
+  user_id    String   @db.Uuid
+  token_hash String
+  expires_at DateTime @db.Timestamptz(6)
+  used       Boolean  @default(false)
+  created_at DateTime @db.Timestamptz(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_password_reset_tokens_expires_at")
+  @@index([user_id], map: "idx_password_reset_tokens_user_id")
+  @@schema("auth")
+}
+
+model permissions {
+  id               String             @id @db.Uuid
+  name             String             @unique @db.VarChar(255)
+  description      String?
+  module           String             @db.VarChar(100)
+  created_at       DateTime           @db.Timestamptz(6)
+  updated_at       DateTime           @db.Timestamptz(6)
+  role_permissions role_permissions[]
+
+  @@index([module], map: "idx_permissions_module")
+  @@schema("auth")
+}
+
+model refresh_tokens {
+  id         String   @id @db.Uuid
+  session_id String   @db.Uuid
+  user_id    String   @db.Uuid
+  token_hash String
+  expires_at DateTime @db.Timestamptz(6)
+  revoked    Boolean  @default(false)
+  created_at DateTime @db.Timestamptz(6)
+  sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_refresh_tokens_expires_at")
+  @@index([token_hash], map: "idx_refresh_tokens_hash")
+  @@index([session_id], map: "idx_refresh_tokens_session_id")
+  @@index([user_id], map: "idx_refresh_tokens_user_id")
+  @@schema("auth")
+}
+
+model role_permissions {
+  id            String      @id @db.Uuid
+  role_id       String      @db.Uuid
+  permission_id String      @db.Uuid
+  created_at    DateTime    @db.Timestamptz(6)
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([role_id, permission_id], map: "uq_role_permissions")
+  @@index([permission_id], map: "idx_role_permissions_permission_id")
+  @@index([role_id], map: "idx_role_permissions_role_id")
+  @@schema("auth")
+}
+
+model roles {
+  id               String             @id @db.Uuid
+  organization_id  String             @db.Uuid
+  name             String             @db.VarChar(100)
+  description      String?
+  is_system        Boolean            @default(false)
+  created_at       DateTime           @db.Timestamptz(6)
+  updated_at       DateTime           @db.Timestamptz(6)
+  role_permissions role_permissions[]
+  organizations    organizations      @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_roles       user_roles[]
+
+  @@unique([organization_id, name], map: "uq_roles_org_name")
+  @@index([name], map: "idx_roles_name")
+  @@index([organization_id], map: "idx_roles_org_id")
+  @@schema("auth")
+}
+
+model sessions {
+  id               String           @id @db.Uuid
+  user_id          String           @db.Uuid
+  organization_id  String           @db.Uuid
+  device_name      String?          @db.VarChar(255)
+  browser          String?          @db.VarChar(255)
+  ip_address       String?          @db.Inet
+  country          String?          @db.VarChar(100)
+  city             String?          @db.VarChar(100)
+  user_agent       String?
+  last_activity_at DateTime         @db.Timestamptz(6)
+  expires_at       DateTime         @db.Timestamptz(6)
+  revoked          Boolean          @default(false)
+  created_at       DateTime         @db.Timestamptz(6)
+  refresh_tokens   refresh_tokens[]
+  organizations    organizations    @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users            users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_sessions_expires_at")
+  @@index([organization_id], map: "idx_sessions_org_id")
+  @@index([revoked], map: "idx_sessions_revoked")
+  @@index([user_id], map: "idx_sessions_user_id")
+  @@schema("auth")
+}
+
+model user_roles {
+  id         String   @id @db.Uuid
+  user_id    String   @db.Uuid
+  role_id    String   @db.Uuid
+  created_at DateTime @db.Timestamptz(6)
+  roles      roles    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, role_id], map: "uq_user_roles")
+  @@index([role_id], map: "idx_user_roles_role_id")
+  @@index([user_id], map: "idx_user_roles_user_id")
+  @@schema("auth")
+}
+
+model users {
+  id                                                 String                      @id @db.Uuid
+  organization_id                                    String                      @db.Uuid
+  email                                              String                      @db.VarChar(255)
+  phone                                              String?                     @db.VarChar(30)
+  username                                           String                      @db.VarChar(100)
+  password_hash                                      String
+  first_name                                         String?                     @db.VarChar(100)
+  last_name                                          String?                     @db.VarChar(100)
+  avatar_url                                         String?
+  email_verified                                     Boolean                     @default(false)
+  phone_verified                                     Boolean                     @default(false)
+  status                                             String                      @db.VarChar(50)
+  last_login_at                                      DateTime?                   @db.Timestamptz(6)
+  created_at                                         DateTime                    @db.Timestamptz(6)
+  updated_at                                         DateTime                    @db.Timestamptz(6)
+  deleted_at                                         DateTime?                   @db.Timestamptz(6)
+  audit_logs                                         audit_logs[]
+  email_verification_tokens                          email_verification_tokens[]
+  mfa_configurations                                 mfa_configurations[]
+  password_reset_tokens                              password_reset_tokens[]
+  refresh_tokens                                     refresh_tokens[]
+  sessions                                           sessions[]
+  user_roles                                         user_roles[]
+  organizations_users_organization_idToorganizations organizations               @relation("users_organization_idToorganizations", fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  organizations_organizations_owner_idTousers        organizations[]             @relation("organizations_owner_idTousers")
+  security_events                                    security_events[]
+
+  @@unique([organization_id, email], map: "uq_users_org_email")
+  @@unique([organization_id, username], map: "uq_users_org_username")
+  @@index([email], map: "idx_users_email")
+  @@index([organization_id], map: "idx_users_org_id")
+  @@index([status], map: "idx_users_status")
+  @@index([username], map: "idx_users_username")
+  @@schema("auth")
+}
+
+model api_keys {
+  id              String        @id @db.Uuid
+  organization_id String        @db.Uuid
+  name            String        @db.VarChar(255)
+  key_hash        String        @unique
+  scopes          Json          @default("[]")
+  expires_at      DateTime?     @db.Timestamptz(6)
+  revoked         Boolean       @default(false)
+  created_at      DateTime      @db.Timestamptz(6)
+  organizations   organizations @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_api_keys_expires_at")
+  @@index([organization_id], map: "idx_api_keys_org_id")
+  @@index([revoked], map: "idx_api_keys_revoked")
+  @@schema("developer")
+}
+
+model applications {
+  id                 String        @id @db.Uuid
+  organization_id    String        @db.Uuid
+  name               String        @db.VarChar(255)
+  description        String?
+  client_id          String        @unique @db.VarChar(255)
+  client_secret_hash String
+  application_type   String        @db.VarChar(100)
+  redirect_urls      Json          @default("[]")
+  allowed_origins    Json          @default("[]")
+  logout_urls        Json          @default("[]")
+  web_origins        Json          @default("[]")
+  logo_url           String?
+  primary_color      String?       @db.VarChar(7)
+  background_color   String?       @db.VarChar(7)
+  status             String        @db.VarChar(50)
+  created_at         DateTime      @db.Timestamptz(6)
+  updated_at         DateTime      @db.Timestamptz(6)
+  organizations      organizations @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([organization_id], map: "idx_applications_org_id")
+  @@index([status], map: "idx_applications_status")
+  @@schema("developer")
+}
+
+model organizations {
+  id                                         String            @id @db.Uuid
+  name                                       String            @db.VarChar(255)
+  slug                                       String            @unique @db.VarChar(255)
+  logo_url                                   String?
+  status                                     String            @db.VarChar(50)
+  plan                                       String            @db.VarChar(50)
+  owner_id                                   String?           @db.Uuid
+  created_at                                 DateTime          @db.Timestamptz(6)
+  updated_at                                 DateTime          @db.Timestamptz(6)
+  audit_logs                                 audit_logs[]
+  roles                                      roles[]
+  sessions                                   sessions[]
+  users_users_organization_idToorganizations users[]           @relation("users_organization_idToorganizations")
+  api_keys                                   api_keys[]
+  applications                               applications[]
+  users_organizations_owner_idTousers        users?            @relation("organizations_owner_idTousers", fields: [owner_id], references: [id], onUpdate: NoAction, map: "fk_organizations_owner")
+  security_events                            security_events[]
+
+  @@index([plan], map: "idx_organizations_plan")
+  @@index([status], map: "idx_organizations_status")
+  @@schema("public")
+}
+
+model security_events {
+  id              String        @id @db.Uuid
+  organization_id String        @db.Uuid
+  user_id         String?       @db.Uuid
+  event_type      String        @db.VarChar(255)
+  severity        String        @db.VarChar(50)
+  ip_address      String?       @db.Inet
+  metadata        Json          @default("{}")
+  created_at      DateTime      @db.Timestamptz(6)
+  organizations   organizations @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users?        @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_security_events_created_at")
+  @@index([event_type], map: "idx_security_events_event_type")
+  @@index([organization_id], map: "idx_security_events_org_id")
+  @@index([severity], map: "idx_security_events_severity")
+  @@schema("security")
+}

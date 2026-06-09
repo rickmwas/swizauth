@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwizAuth SDK Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        h1, h2 {
+            color: #1f2937;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5145cd;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .auth-demo {
+            display: none;
+        }
+        .auth-demo.active {
+            display: block;
+        }
+    </style>
+    <!-- Include SwizAuth CSS -->
+    <link rel="stylesheet" href="../../src/styles/swizauth.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SwizAuth JavaScript SDK Demo</h1>
+        <p>This demo shows how to integrate SwizAuth authentication into your application using the JavaScript SDK.</p>
+        
+        <!-- Configuration Section -->
+        <div class="demo-section">
+            <h2>Configuration</h2>
+            <p>First, configure your SwizAuth client:</p>
+            <pre><code>const swizAuth = new SwizAuth.SwizAuthClient({
+  clientId: 'your_client_id_here',
+  domain: 'http://localhost:8080',
+  organizationId: 'your_org_id_here' // Optional: pre-set organization
+});</code></pre>
+            
+            <div>
+                <label>Client ID:</label>
+                <input type="text" id="clientId" value="demo_client_id" style="width: 300px; padding: 5px;">
+            </div>
+            <div style="margin-top: 10px;">
+                <label>Domain:</label>
+                <input type="text" id="domain" value="http://localhost:8080" style="width: 300px; padding: 5px;">
+            </div>
+            <div style="margin-top: 10px;">
+                <button onclick="initializeClient()">Initialize Client</button>
+            </div>
+            <div id="init-status"></div>
+        </div>
+
+        <!-- Authentication Demos -->
+        <div class="demo-section">
+            <h2>Authentication Methods</h2>
+            <div style="margin-bottom: 20px;">
+                <button onclick="showDemo('signin')">Sign In Demo</button>
+                <button onclick="showDemo('signup')">Sign Up Demo</button>
+                <button onclick="showDemo('profile')">User Profile Demo</button>
+                <button onclick="showDemo('org-switcher')">Organization Switcher Demo</button>
+            </div>
+
+            <!-- Sign In Demo -->
+            <div id="signin-demo" class="auth-demo">
+                <h3>Sign In Widget</h3>
+                <p>Embed the SignIn component directly into your page:</p>
+                <div class="demo-grid">
+                    <div>
+                        <h4>Widget</h4>
+                        <div id="signin-widget"></div>
+                    </div>
+                    <div>
+                        <h4>Code</h4>
+                        <pre><code>&lt;div id="signin-widget"&gt;&lt;/div&gt;
+&lt;script&gt;
+// Using vanilla JS
+SwizAuth.renderSignIn('#signin-widget', {
+  onSignIn: () => console.log('Signed in!'),
+  onError: (error) => console.error('Error:', error),
+  appearance: {
+    primaryColor: '#6366f1',
+    logoUrl: 'https://example.com/logo.png'
+  }
+});
+&lt;/script&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sign Up Demo -->
+            <div id="signup-demo" class="auth-demo">
+                <h3>Sign Up Widget</h3>
+                <p>Embed the SignUp component for user registration:</p>
+                <div class="demo-grid">
+                    <div>
+                        <h4>Widget</h4>
+                        <div id="signup-widget"></div>
+                    </div>
+                    <div>
+                        <h4>Code</h4>
+                        <pre><code>&lt;div id="signup-widget"&gt;&lt;/div&gt;
+&lt;script&gt;
+SwizAuth.renderSignUp('#signup-widget', {
+  onSignUp: () => console.log('Signed up!'),
+  onError: (error) => console.error('Error:', error),
+  appearance: {
+    primaryColor: '#6366f1',
+    backgroundColor: '#ffffff'
+  }
+});
+&lt;/script&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile Demo -->
+            <div id="profile-demo" class="auth-demo">
+                <h3>User Profile Widget</h3>
+                <p>Display and edit user profile information:</p>
+                <div class="demo-grid">
+                    <div>
+                        <h4>Widget</h4>
+                        <div id="profile-widget"></div>
+                    </div>
+                    <div>
+                        <h4>Code</h4>
+                        <pre><code>&lt;div id="profile-widget"&gt;&lt;/div&gt;
+&lt;script&gt;
+SwizAuth.renderUserProfile('#profile-widget', {
+  onUpdate: () => console.log('Profile updated!'),
+  onError: (error) => console.error('Error:', error)
+});
+&lt;/script&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organization Switcher Demo -->
+            <div id="org-switcher-demo" class="auth-demo">
+                <h3>Organization Switcher Widget</h3>
+                <p>Allow users to switch between organizations:</p>
+                <div class="demo-grid">
+                    <div>
+                        <h4>Widget</h4>
+                        <div id="org-switcher-widget"></div>
+                    </div>
+                    <div>
+                        <h4>Code</h4>
+                        <pre><code>&lt;div id="org-switcher-widget"&gt;&lt;/div&gt;
+&lt;script&gt;
+SwizAuth.renderOrganizationSwitcher('#org-switcher-widget', {
+  onSwitch: (org) => console.log('Switched to:', org),
+  appearance: {
+    primaryColor: '#6366f1'
+  }
+});
+&lt;/script&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Methods Demo -->
+        <div class="demo-section">
+            <h2>SDK Methods</h2>
+            <p>Test the core SDK methods:</p>
+            
+            <div style="margin: 20px 0;">
+                <h4>Authentication Status</h4>
+                <button onclick="checkAuthStatus()">Check Auth Status</button>
+                <div id="auth-status"></div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4>Manual Sign In</h4>
+                <input type="email" id="login-email" placeholder="Email" style="margin: 5px; padding: 5px;">
+                <input type="password" id="login-password" placeholder="Password" style="margin: 5px; padding: 5px;">
+                <button onclick="manualSignIn()">Sign In</button>
+                <div id="signin-result"></div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4>Get Current User</h4>
+                <button onclick="getCurrentUser()">Get User</button>
+                <div id="user-info"></div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4>Sign Out</h4>
+                <button onclick="signOut()">Sign Out</button>
+                <div id="signout-result"></div>
+            </div>
+        </div>
+
+        <!-- Integration Guide -->
+        <div class="demo-section">
+            <h2>Integration Guide</h2>
+            <h3>1. Install the SDK</h3>
+            <pre><code>npm install @swizauth/js
+# or
+yarn add @swizauth/js</code></pre>
+
+            <h3>2. Import and Initialize</h3>
+            <pre><code>import { SwizAuthClient } from '@swizauth/js';
+
+const swizAuth = new SwizAuthClient({
+  clientId: 'your_client_id',
+  domain: 'https://auth.yourdomain.com'
+});</code></pre>
+
+            <h3>3. React Integration</h3>
+            <pre><code>import { SwizAuthProvider, SignIn, useAuth } from '@swizauth/js';
+
+function App() {
+  return (
+    &lt;SwizAuthProvider config={{ clientId: 'your_client_id', domain: 'https://auth.yourdomain.com' }}&gt;
+      &lt;AuthenticatedApp /&gt;
+    &lt;/SwizAuthProvider&gt;
+  );
+}
+
+function AuthenticatedApp() {
+  const { isSignedIn, user } = useAuth();
+  
+  if (!isSignedIn) {
+    return &lt;SignIn /&gt;;
+  }
+  
+  return &lt;div&gt;Welcome, {user.firstName}!&lt;/div&gt;;
+}</code></pre>
+
+            <h3>4. Vanilla JavaScript</h3>
+            <pre><code>// Include the UMD build
+&lt;script src="https://cdn.jsdelivr.net/npm/@swizauth/js@latest/dist/swizauth.umd.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@swizauth/js@latest/dist/swizauth.css"&gt;
+
+&lt;script&gt;
+const client = new SwizAuth.SwizAuthClient({
+  clientId: 'your_client_id',
+  domain: 'https://auth.yourdomain.com'
+});
+
+// Render components
+SwizAuth.renderSignIn('#signin-container');
+&lt;/script&gt;</code></pre>
+        </div>
+    </div>
+
+    <!-- Include SwizAuth SDK (simulated for demo) -->
+    <script>
+        // Mock SwizAuth SDK for demo purposes
+        let swizAuthClient = null;
+        
+        const SwizAuth = {
+            SwizAuthClient: class {
+                constructor(config) {
+                    this.config = config;
+                    this.isAuthenticated = false;
+                    this.user = null;
+                }
+                
+                async signIn(credentials) {
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    if (credentials.email && credentials.password) {
+                        this.isAuthenticated = true;
+                        this.user = {
+                            id: 'user_123',
+                            email: credentials.email,
+                            firstName: 'John',
+                            lastName: 'Doe'
+                        };
+                        return { user: this.user };
+                    }
+                    throw new Error('Invalid credentials');
+                }
+                
+                async signOut() {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    this.isAuthenticated = false;
+                    this.user = null;
+                }
+                
+                getUser() {
+                    return this.user;
+                }
+                
+                isSignedIn() {
+                    return this.isAuthenticated;
+                }
+            },
+            
+            renderSignIn(selector, options = {}) {
+                const container = document.querySelector(selector);
+                container.innerHTML = `
+                    <div class="swizauth-container">
+                        <div class="swizauth-card">
+                            <div class="swizauth-header">
+                                <h1 class="swizauth-title">Sign in to your account</h1>
+                                <p class="swizauth-subtitle">Welcome back! Please enter your details.</p>
+                            </div>
+                            <form class="swizauth-form" onsubmit="handleFormSignIn(event, '${selector}')">
+                                <div class="swizauth-field">
+                                    <label class="swizauth-label">Email</label>
+                                    <input type="email" class="swizauth-input" name="email" required>
+                                </div>
+                                <div class="swizauth-field">
+                                    <label class="swizauth-label">Password</label>
+                                    <input type="password" class="swizauth-input" name="password" required>
+                                </div>
+                                <button type="submit" class="swizauth-button swizauth-button-primary">
+                                    Sign in
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                
+                // Store options for form handler
+                container._swizAuthOptions = options;
+            },
+            
+            renderSignUp(selector, options = {}) {
+                const container = document.querySelector(selector);
+                container.innerHTML = `
+                    <div class="swizauth-container">
+                        <div class="swizauth-card">
+                            <div class="swizauth-header">
+                                <h1 class="swizauth-title">Create your account</h1>
+                                <p class="swizauth-subtitle">Get started with your free account today.</p>
+                            </div>
+                            <form class="swizauth-form">
+                                <div class="swizauth-field">
+                                    <label class="swizauth-label">Email</label>
+                                    <input type="email" class="swizauth-input" required>
+                                </div>
+                                <div class="swizauth-field">
+                                    <label class="swizauth-label">Password</label>
+                                    <input type="password" class="swizauth-input" required>
+                                </div>
+                                <button type="submit" class="swizauth-button swizauth-button-primary">
+                                    Create account
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderUserProfile(selector, options = {}) {
+                const container = document.querySelector(selector);
+                if (!swizAuthClient?.isSignedIn()) {
+                    container.innerHTML = '<div class="swizauth-error">Please sign in to view your profile.</div>';
+                    return;
+                }
+                
+                const user = swizAuthClient.getUser();
+                container.innerHTML = `
+                    <div class="swizauth-container">
+                        <div class="swizauth-card">
+                            <div class="swizauth-header">
+                                <h1 class="swizauth-title">Profile</h1>
+                                <p class="swizauth-subtitle">Manage your account information</p>
+                            </div>
+                            <div class="swizauth-profile-view">
+                                <div class="swizauth-profile-avatar">
+                                    <div class="swizauth-avatar-placeholder">
+                                        ${user?.firstName?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                </div>
+                                <div class="swizauth-profile-info">
+                                    <div class="swizauth-field-display">
+                                        <label class="swizauth-label">Full Name</label>
+                                        <div class="swizauth-value">${user?.firstName || ''} ${user?.lastName || ''}</div>
+                                    </div>
+                                    <div class="swizauth-field-display">
+                                        <label class="swizauth-label">Email</label>
+                                        <div class="swizauth-value">${user?.email || ''}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderOrganizationSwitcher(selector, options = {}) {
+                const container = document.querySelector(selector);
+                container.innerHTML = `
+                    <div class="swizauth-org-switcher">
+                        <button class="swizauth-org-trigger">
+                            <div class="swizauth-org-info">
+                                <div class="swizauth-org-avatar">A</div>
+                                <div class="swizauth-org-details">
+                                    <div class="swizauth-org-name">Acme Corp</div>
+                                    <div class="swizauth-org-plan">business</div>
+                                </div>
+                            </div>
+                            <div class="swizauth-chevron swizauth-chevron-down">▼</div>
+                        </button>
+                    </div>
+                `;
+            }
+        };
+        
+        // Demo functions
+        function initializeClient() {
+            const clientId = document.getElementById('clientId').value;
+            const domain = document.getElementById('domain').value;
+            
+            swizAuthClient = new SwizAuth.SwizAuthClient({
+                clientId,
+                domain
+            });
+            
+            document.getElementById('init-status').innerHTML = 
+                '<div class="status success">Client initialized successfully!</div>';
+        }
+        
+        function showDemo(type) {
+            // Hide all demos
+            document.querySelectorAll('.auth-demo').forEach(demo => {
+                demo.classList.remove('active');
+            });
+            
+            // Show selected demo
+            document.getElementById(`${type}-demo`).classList.add('active');
+            
+            // Render widgets based on type
+            setTimeout(() => {
+                switch(type) {
+                    case 'signin':
+                        SwizAuth.renderSignIn('#signin-widget');
+                        break;
+                    case 'signup':
+                        SwizAuth.renderSignUp('#signup-widget');
+                        break;
+                    case 'profile':
+                        SwizAuth.renderUserProfile('#profile-widget');
+                        break;
+                    case 'org-switcher':
+                        SwizAuth.renderOrganizationSwitcher('#org-switcher-widget');
+                        break;
+                }
+            }, 100);
+        }
+        
+        async function handleFormSignIn(event, selector) {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.email.value;
+            const password = form.password.value;
+            
+            try {
+                if (swizAuthClient) {
+                    await swizAuthClient.signIn({ email, password });
+                    const container = document.querySelector(selector);
+                    const options = container._swizAuthOptions || {};
+                    if (options.onSignIn) options.onSignIn();
+                    
+                    container.innerHTML = '<div class="status success">Signed in successfully!</div>';
+                }
+            } catch (error) {
+                const container = document.querySelector(selector);
+                container.innerHTML += `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function checkAuthStatus() {
+            if (!swizAuthClient) {
+                document.getElementById('auth-status').innerHTML = 
+                    '<div class="status error">Client not initialized</div>';
+                return;
+            }
+            
+            const isSignedIn = swizAuthClient.isSignedIn();
+            document.getElementById('auth-status').innerHTML = 
+                `<div class="status ${isSignedIn ? 'success' : 'error'}">
+                    Authenticated: ${isSignedIn}
+                </div>`;
+        }
+        
+        async function manualSignIn() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!swizAuthClient) {
+                document.getElementById('signin-result').innerHTML = 
+                    '<div class="status error">Client not initialized</div>';
+                return;
+            }
+            
+            try {
+                const result = await swizAuthClient.signIn({ email, password });
+                document.getElementById('signin-result').innerHTML = 
+                    '<div class="status success">Signed in successfully!</div>';
+            } catch (error) {
+                document.getElementById('signin-result').innerHTML = 
+                    `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function getCurrentUser() {
+            if (!swizAuthClient) {
+                document.getElementById('user-info').innerHTML = 
+                    '<div class="status error">Client not initialized</div>';
+                return;
+            }
+            
+            const user = swizAuthClient.getUser();
+            document.getElementById('user-info').innerHTML = 
+                `<pre>${JSON.stringify(user, null, 2)}</pre>`;
+        }
+        
+        async function signOut() {
+            if (!swizAuthClient) {
+                document.getElementById('signout-result').innerHTML = 
+                    '<div class="status error">Client not initialized</div>';
+                return;
+            }
+            
+            try {
+                await swizAuthClient.signOut();
+                document.getElementById('signout-result').innerHTML = 
+                    '<div class="status success">Signed out successfully!</div>';
+            } catch (error) {
+                document.getElementById('signout-result').innerHTML = 
+                    `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Initialize with first demo
+        window.addEventListener('load', () => {
+            showDemo('signin');
+        });
+    </script>
+</body>
+</html>

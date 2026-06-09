@@ -1,0 +1,57 @@
+name: Deploy Dashboard to Fly.io
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/**'
+      - '.github/workflows/deploy-dashboard.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Dashboard
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./dashboard
+
+      - name: Build application
+        run: npm run build
+        working-directory: ./dashboard
+
+      - name: Run tests
+        run: npm run test --if-present
+        working-directory: ./dashboard
+
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only
+        working-directory: ./dashboard
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Dashboard deployed successfully to https://swizauth-dashboard.fly.dev"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Dashboard deployment failed"
+          exit 1

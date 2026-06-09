@@ -1,0 +1,189 @@
+name: Deploy All Services to Fly.io
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'sdk/**'
+      - 'README.md'
+      - 'memory.md'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - auth-service
+          - admin-service  
+          - dashboard
+
+jobs:
+  # Detect what services changed
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      auth-service: ${{ steps.changes.outputs.auth-service }}
+      admin-service: ${{ steps.changes.outputs.admin-service }}
+      dashboard: ${{ steps.changes.outputs.dashboard }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect service changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            auth-service:
+              - 'auth-service/**'
+            admin-service:
+              - 'admin-service/**'
+            dashboard:
+              - 'dashboard/**'
+
+  # Deploy Auth Service
+  deploy-auth:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.auth-service == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'auth-service'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache-dependency-path: auth-service/go.sum
+
+      - name: Run Go tests
+        run: go test ./...
+        working-directory: ./auth-service
+
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy Auth Service
+        run: flyctl deploy --remote-only
+        working-directory: ./auth-service
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # Deploy Admin Service
+  deploy-admin:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.admin-service == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'admin-service'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: admin-service/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./admin-service
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: ./admin-service
+
+      - name: Run tests
+        run: npm run test --if-present
+        working-directory: ./admin-service
+
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy Admin Service
+        run: flyctl deploy --remote-only
+        working-directory: ./admin-service
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # Deploy Dashboard
+  deploy-dashboard:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.dashboard == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'dashboard'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./dashboard
+
+      - name: Build application
+        run: npm run build
+        working-directory: ./dashboard
+
+      - name: Run tests
+        run: npm run test --if-present
+        working-directory: ./dashboard
+
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy Dashboard
+        run: flyctl deploy --remote-only
+        working-directory: ./dashboard
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # Deployment summary
+  deployment-summary:
+    needs: [deploy-auth, deploy-admin, deploy-dashboard]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "🚀 SwizAuth Deployment Summary"
+          echo "================================"
+          
+          if [[ "${{ needs.deploy-auth.result }}" == "success" ]]; then
+            echo "✅ Auth Service: https://swizauth-auth.fly.dev"
+          elif [[ "${{ needs.deploy-auth.result }}" == "failure" ]]; then
+            echo "❌ Auth Service: Deployment failed"
+          else
+            echo "⏭️  Auth Service: Skipped (no changes)"
+          fi
+          
+          if [[ "${{ needs.deploy-admin.result }}" == "success" ]]; then
+            echo "✅ Admin Service: https://swizauth-admin.fly.dev"
+          elif [[ "${{ needs.deploy-admin.result }}" == "failure" ]]; then
+            echo "❌ Admin Service: Deployment failed"
+          else
+            echo "⏭️  Admin Service: Skipped (no changes)"
+          fi
+          
+          if [[ "${{ needs.deploy-dashboard.result }}" == "success" ]]; then
+            echo "✅ Dashboard: https://swizauth-dashboard.fly.dev"
+          elif [[ "${{ needs.deploy-dashboard.result }}" == "failure" ]]; then
+            echo "❌ Dashboard: Deployment failed" 
+          else
+            echo "⏭️  Dashboard: Skipped (no changes)"
+          fi
