@@ -26,6 +26,7 @@ type AuthHandler struct {
 	verificationRepo repository.VerificationRepository
 	mfaRepo          repository.MfaRepository
 	organizationRepo repository.OrganizationRepository
+	onboardingRepo   repository.OnboardingRepository
 	passwordSvc      service.PasswordService
 	tokenSvc         service.TokenService
 	cryptoSvc        service.CryptoService
@@ -40,6 +41,7 @@ func NewAuthHandler(
 	verificationRepo repository.VerificationRepository,
 	mfaRepo repository.MfaRepository,
 	organizationRepo repository.OrganizationRepository,
+	onboardingRepo repository.OnboardingRepository,
 	passwordSvc service.PasswordService,
 	tokenSvc service.TokenService,
 	cryptoSvc service.CryptoService,
@@ -52,6 +54,7 @@ func NewAuthHandler(
 		verificationRepo: verificationRepo,
 		mfaRepo:          mfaRepo,
 		organizationRepo: organizationRepo,
+		onboardingRepo:   onboardingRepo,
 		passwordSvc:      passwordSvc,
 		tokenSvc:         tokenSvc,
 		cryptoSvc:        cryptoSvc,
@@ -213,13 +216,7 @@ func (h *AuthHandler) Onboard(c *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	if err := h.organizationRepo.CreateOrganization(ctx, org); err != nil {
-		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to create organization"}})
-		return
-	}
-
-	// Create user
+	// Hash password
 	passwordHash, err := h.passwordSvc.HashPassword(req.Password)
 	if err != nil {
 		c.Error(fmt.Errorf("failed to hash password: %w", err))
@@ -246,30 +243,13 @@ func (h *AuthHandler) Onboard(c *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	if err := h.userRepo.CreateUser(ctx, user); err != nil {
-		if errors.Is(err, repository.ErrEmailAlreadyExists) {
-			c.JSON(http.StatusConflict, gin.H{"success": false, "error": gin.H{"code": "EMAIL_EXISTS", "message": "Email address already registered for this tenant"}})
-			return
-		}
-		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to create user record"}})
-		return
-	}
-
-	// Make user the org owner
-	org.OwnerID = &user.ID
-	org.UpdatedAt = time.Now()
-	// Best-effort update: reuse CreateOrganization is fine for now; skipping update query for brevity.
-
-	// Create session
+	// Create session data
 	sessionID, err := uuid.NewV7()
 	if err != nil {
 		sessionID = uuid.New()
 	}
-
 	userAgent := c.GetHeader("User-Agent")
 	ipAddress := c.ClientIP()
-
 	sessionExpiry := time.Now().Add(30 * 24 * time.Hour)
 	session := &domain.Session{
 		ID: sessionID,
@@ -301,13 +281,13 @@ func (h *AuthHandler) Onboard(c *gin.Context) {
 	hasher.Write([]byte(rawRefreshToken))
 	hashedRefreshToken := hex.EncodeToString(hasher.Sum(nil))
 
-	if err := h.sessionRepo.CreateSessionAndToken(ctx, session, hashedRefreshToken, sessionExpiry); err != nil {
+	// Perform transactional insert for org, user, session, and refresh token
+	if err := h.onboardingRepo.CreateOrgUserSession(ctx, org, user, session, hashedRefreshToken, sessionExpiry); err != nil {
 		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to establish session"}})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to complete onboarding"}})
 		return
 	}
 
-	// Return tokens and basic info
 	c.JSON(http.StatusCreated, gin.H{
 		"tokens": gin.H{
 			"access_token": accessToken,

@@ -74,6 +74,7 @@ func main() {
 	verificationRepo := repository.NewVerificationRepository(dbPool)
 	mfaRepo := repository.NewMfaRepository(dbPool)
 	organizationRepo := repository.NewOrganizationRepository(dbPool)
+	onboardingRepo := repository.NewOnboardingRepository(dbPool)
 
 	// 4.2 Initialize Services
 	passwordSvc := service.NewPasswordService()
@@ -96,6 +97,7 @@ func main() {
 		verificationRepo,
 		mfaRepo,
 		organizationRepo,
+		onboardingRepo,
 		passwordSvc,
 		tokenSvc,
 		cryptoSvc,
