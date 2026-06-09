@@ -128,6 +128,7 @@ func main() {
 		auth := apiV1.Group("/auth")
 		{
 			auth.POST("/register", middleware.RateLimiter(rdb, "register", 5, time.Minute), authHandler.Register)
+			auth.POST("/onboard", authHandler.Onboard)
 			auth.POST("/login", middleware.RateLimiter(rdb, "login", 10, time.Minute), authHandler.Login)
 			auth.GET("/verify", authHandler.Verify)
 			auth.POST("/logout", authHandler.Logout)

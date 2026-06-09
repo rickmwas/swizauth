@@ -16,6 +16,7 @@ var ErrOrganizationNotFound = errors.New("organization not found")
 
 type OrganizationRepository interface {
 	GetOrganizationByID(ctx context.Context, organizationID uuid.UUID) (*domain.Organization, error)
+	CreateOrganization(ctx context.Context, org *domain.Organization) error
 }
 
 type organizationRepository struct {
@@ -52,4 +53,27 @@ func (r *organizationRepository) GetOrganizationByID(ctx context.Context, organi
 	}
 
 	return &org, nil
+}
+
+func (r *organizationRepository) CreateOrganization(ctx context.Context, org *domain.Organization) error {
+	query := `
+		INSERT INTO public.organizations (id, name, slug, logo_url, status, plan, owner_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+
+	_, err := r.db.Exec(ctx, query,
+		org.ID,
+		org.Name,
+		org.Slug,
+		org.LogoURL,
+		org.Status,
+		org.Plan,
+		org.OwnerID,
+		org.CreatedAt,
+		org.UpdatedAt,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create organization: %w", err)
+	}
+	return nil
 }
