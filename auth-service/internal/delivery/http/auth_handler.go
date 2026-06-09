@@ -25,6 +25,7 @@ type AuthHandler struct {
 	sessionRepo      repository.SessionRepository
 	verificationRepo repository.VerificationRepository
 	mfaRepo          repository.MfaRepository
+	organizationRepo repository.OrganizationRepository
 	passwordSvc      service.PasswordService
 	tokenSvc         service.TokenService
 	cryptoSvc        service.CryptoService
@@ -38,6 +39,7 @@ func NewAuthHandler(
 	sessionRepo repository.SessionRepository,
 	verificationRepo repository.VerificationRepository,
 	mfaRepo repository.MfaRepository,
+	organizationRepo repository.OrganizationRepository,
 	passwordSvc service.PasswordService,
 	tokenSvc service.TokenService,
 	cryptoSvc service.CryptoService,
@@ -49,6 +51,7 @@ func NewAuthHandler(
 		sessionRepo:      sessionRepo,
 		verificationRepo: verificationRepo,
 		mfaRepo:          mfaRepo,
+		organizationRepo: organizationRepo,
 		passwordSvc:      passwordSvc,
 		tokenSvc:         tokenSvc,
 		cryptoSvc:        cryptoSvc,
@@ -1619,6 +1622,29 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
+	organization, err := h.organizationRepo.GetOrganizationByID(ctx, user.OrganizationID)
+	if err != nil {
+		if errors.Is(err, repository.ErrOrganizationNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "NOT_FOUND",
+					"message": "Organization not found",
+				},
+			})
+			return
+		}
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "Failed to load organization",
+			},
+		})
+		return
+	}
+
 	// Get session details
 	sessionIDStr, _ := claims["session_id"].(string)
 	sessionUUID, _ := uuid.Parse(sessionIDStr)
@@ -1635,8 +1661,6 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	}
 
 	// Extract claims data
-	orgIDStr, _ := claims["org"].(string)
-	email, _ := claims["email"].(string)
 	var roles []string
 	var permissions []string
 
@@ -1674,10 +1698,12 @@ func (h *AuthHandler) Me(c *gin.Context) {
 			"updatedAt":      user.UpdatedAt,
 		},
 		"organization": gin.H{
-			"id":   orgIDStr,
-			"name": "Default Organization", // TODO: Get from claims or DB
-			"slug": "default-org",         // TODO: Get from claims or DB
-			"plan": "free",                // TODO: Get from claims or DB
+			"id":      organization.ID.String(),
+			"name":    organization.Name,
+			"slug":    organization.Slug,
+			"logoUrl": organization.LogoURL,
+			"plan":    organization.Plan,
+			"status":  organization.Status,
 		},
 		"session": gin.H{
 			"id":              session.ID.String(),
@@ -1725,17 +1751,53 @@ func (h *AuthHandler) Organizations(c *gin.Context) {
 
 	// Get user's organizations (for now, just return current one)
 	// TODO: Implement multi-org membership when that feature is added
+	ctx := context.Background()
 	orgIDStr, _ := claims["org"].(string)
-	
+	orgID, err := uuid.Parse(orgIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "VALIDATION_ERROR",
+				"message": "Invalid organization identifier in token",
+			},
+		})
+		return
+	}
+
+	organization, err := h.organizationRepo.GetOrganizationByID(ctx, orgID)
+	if err != nil {
+		if errors.Is(err, repository.ErrOrganizationNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "NOT_FOUND",
+					"message": "Organization not found",
+				},
+			})
+			return
+		}
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "Failed to load organizations",
+			},
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"organizations": []gin.H{
 			{
-				"id":     orgIDStr,
-				"name":   "Default Organization", // TODO: Get from DB
-				"slug":   "default-org",         // TODO: Get from DB
-				"plan":   "free",                // TODO: Get from DB
-				"status": "active",
+				"id":      organization.ID.String(),
+				"name":    organization.Name,
+				"slug":    organization.Slug,
+				"logoUrl": organization.LogoURL,
+				"plan":    organization.Plan,
+				"status":  organization.Status,
 			},
 		},
 	})
@@ -1772,8 +1834,7 @@ func (h *AuthHandler) SwitchOrganization(c *gin.Context) {
 	}
 
 	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
-	claims, err := h.tokenSvc.VerifyAccessToken(accessToken)
-	if err != nil {
+	if _, err := h.tokenSvc.VerifyAccessToken(accessToken); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"error": gin.H{
