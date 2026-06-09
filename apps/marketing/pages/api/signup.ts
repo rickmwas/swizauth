@@ -10,33 +10,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Attempt to create a new organization via internal admin API (not implemented yet)
-    // Fallback: call /auth/register with a placeholder organization id is not possible.
-    // For now, call /auth/login after assuming registration handled elsewhere.
-
-    // Try to register (expects organization_id currently) - we call a best-effort endpoint
-    const registerResp = await fetch(`${AUTH_SERVICE}/api/v1/auth/register`, {
+    // Call the onboarding endpoint to create org + user + session atomically
+    const onboardResp = await fetch(`${AUTH_SERVICE}/api/v1/auth/onboard`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, organization_id: process.env.DEFAULT_ORG_ID })
+      body: JSON.stringify({ email, password, organization_name })
     })
 
-    const registerData = await registerResp.json().catch(()=>null)
+    const onboardData = await onboardResp.json().catch(()=>null)
 
-    // After register, try to login to obtain tokens
-    const loginResp = await fetch(`${AUTH_SERVICE}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
-    const loginData = await loginResp.json()
-
-    if (!loginResp.ok) {
-      return res.status(loginResp.status).json(loginData)
+    if (!onboardResp.ok) {
+      return res.status(onboardResp.status).json(onboardData)
     }
 
     // Return tokens to the marketing app which will redirect to dashboard
-    return res.status(200).json({ tokens: { access_token: loginData.access_token || loginData.AccessToken || loginData.accessToken, refresh_token: loginData.refresh_token || loginData.RefreshToken || loginData.refreshToken } })
+    return res.status(200).json({ tokens: { access_token: onboardData.tokens?.access_token || onboardData.tokens?.AccessToken || onboardData.tokens?.accessToken, refresh_token: onboardData.tokens?.refresh_token || onboardData.tokens?.RefreshToken || onboardData.tokens?.refreshToken } })
   } catch (err:any) {
     console.error(err)
     return res.status(500).json({ error: { message: 'Signup integration error' } })

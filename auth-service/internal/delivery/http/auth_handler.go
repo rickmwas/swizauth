@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -61,6 +62,14 @@ func NewAuthHandler(
 		totpSvc:          totpSvc,
 		redis:            rdb,
 	}
+}
+
+func slugify(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	re := regexp.MustCompile(`[^a-z0-9]+`)
+	s = re.ReplaceAllString(s, "-")
+	s = strings.Trim(s, "-")
+	return s
 }
 
 // Register registers a new user under an existing organization
@@ -215,6 +224,9 @@ func (h *AuthHandler) Onboard(c *gin.Context) {
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
+	if org.Slug == "" {
+		org.Slug = slugify(org.Name)
+	}
 
 	// Hash password
 	passwordHash, err := h.passwordSvc.HashPassword(req.Password)
@@ -281,7 +293,8 @@ func (h *AuthHandler) Onboard(c *gin.Context) {
 	hasher.Write([]byte(rawRefreshToken))
 	hashedRefreshToken := hex.EncodeToString(hasher.Sum(nil))
 
-	// Perform transactional insert for org, user, session, and refresh token
+	// Ensure organization owner is set and perform transactional insert for org, user, session, and refresh token
+	org.OwnerID = &user.ID
 	if err := h.onboardingRepo.CreateOrgUserSession(ctx, org, user, session, hashedRefreshToken, sessionExpiry); err != nil {
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to complete onboarding"}})
