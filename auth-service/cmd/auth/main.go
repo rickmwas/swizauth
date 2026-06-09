@@ -131,6 +131,12 @@ func main() {
 			auth.POST("/logout", authHandler.Logout)
 			auth.POST("/logout-all", authHandler.LogoutAll)
 
+			// User profile and organization endpoints  
+			auth.GET("/me", authHandler.Me)
+			auth.PATCH("/profile", authHandler.UpdateProfile)
+			auth.GET("/organizations", authHandler.Organizations)
+			auth.POST("/switch-organization", authHandler.SwitchOrganization)
+
 			// Refresh and Verification Endpoints
 			auth.POST("/refresh", authHandler.Refresh)
 			auth.POST("/email/verify", authHandler.VerifyEmail)

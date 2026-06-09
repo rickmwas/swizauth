@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,6 +31,9 @@ type UserRepository interface {
 	VerifyEmail(ctx context.Context, userID uuid.UUID) error
 	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 	GetUserByID(ctx context.Context, userID uuid.UUID) (*domain.User, error)
+	GetUserByUsernameInOrg(ctx context.Context, username string, orgID uuid.UUID) (*domain.User, error)
+	GetUserByEmailInOrg(ctx context.Context, email string, orgID uuid.UUID) (*domain.User, error)
+	UpdateUserProfile(ctx context.Context, userID uuid.UUID, updateData map[string]interface{}) error
 }
 
 type userRepository struct {
@@ -249,3 +253,87 @@ func (r *userRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*do
 }
 
 
+// GetUserByUsernameInOrg fetches a user by username within a specific organization
+func (r *userRepository) GetUserByUsernameInOrg(ctx context.Context, username string, orgID uuid.UUID) (*domain.User, error) {
+	query := `
+		SELECT 
+			id, organization_id, email, phone, username, password_hash, 
+			first_name, last_name, avatar_url, email_verified, 
+			phone_verified, status, last_login_at, created_at, updated_at
+		FROM auth.users 
+		WHERE username = $1 AND organization_id = $2 AND deleted_at IS NULL
+	`
+
+	var u domain.User
+	err := r.db.QueryRow(ctx, query, username, orgID).Scan(
+		&u.ID, &u.OrganizationID, &u.Email, &u.Phone, &u.Username, &u.PasswordHash,
+		&u.FirstName, &u.LastName, &u.AvatarURL, &u.EmailVerified,
+		&u.PhoneVerified, &u.Status, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to query user by username in org: %w", err)
+	}
+
+	return &u, nil
+}
+
+// GetUserByEmailInOrg fetches a user by email within a specific organization
+func (r *userRepository) GetUserByEmailInOrg(ctx context.Context, email string, orgID uuid.UUID) (*domain.User, error) {
+	query := `
+		SELECT 
+			id, organization_id, email, phone, username, password_hash, 
+			first_name, last_name, avatar_url, email_verified, 
+			phone_verified, status, last_login_at, created_at, updated_at
+		FROM auth.users 
+		WHERE email = $1 AND organization_id = $2 AND deleted_at IS NULL
+	`
+
+	var u domain.User
+	err := r.db.QueryRow(ctx, query, email, orgID).Scan(
+		&u.ID, &u.OrganizationID, &u.Email, &u.Phone, &u.Username, &u.PasswordHash,
+		&u.FirstName, &u.LastName, &u.AvatarURL, &u.EmailVerified,
+		&u.PhoneVerified, &u.Status, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to query user by email in org: %w", err)
+	}
+
+	return &u, nil
+}
+
+// UpdateUserProfile updates user profile fields
+func (r *userRepository) UpdateUserProfile(ctx context.Context, userID uuid.UUID, updateData map[string]interface{}) error {
+	// Build dynamic update query
+	setParts := make([]string, 0, len(updateData))
+	args := make([]interface{}, 0, len(updateData)+1)
+	argIndex := 1
+
+	for field, value := range updateData {
+		setParts = append(setParts, fmt.Sprintf("%s = $%d", field, argIndex))
+		args = append(args, value)
+		argIndex++
+	}
+
+	query := fmt.Sprintf(`
+		UPDATE auth.users 
+		SET %s 
+		WHERE id = $%d AND deleted_at IS NULL
+	`, strings.Join(setParts, ", "), argIndex)
+	
+	args = append(args, userID)
+
+	_, err := r.db.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update user profile: %w", err)
+	}
+
+	return nil
+}

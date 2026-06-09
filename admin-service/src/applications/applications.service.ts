@@ -40,6 +40,12 @@ export class ApplicationsService {
         client_secret_hash: clientSecretHash,
         application_type: dto.application_type,
         redirect_urls: JSON.stringify(dto.redirect_urls ?? []),
+        allowed_origins: JSON.stringify(dto.allowed_origins ?? []),
+        logout_urls: JSON.stringify(dto.logout_urls ?? []),
+        web_origins: JSON.stringify(dto.web_origins ?? []),
+        logo_url: dto.logo_url ?? null,
+        primary_color: dto.primary_color ?? null,
+        background_color: dto.background_color ?? null,
         status: 'active',
         created_at: now,
         updated_at: now,
@@ -70,6 +76,12 @@ export class ApplicationsService {
         client_id: true,
         application_type: true,
         redirect_urls: true,
+        allowed_origins: true,
+        logout_urls: true,
+        web_origins: true,
+        logo_url: true,
+        primary_color: true,
+        background_color: true,
         status: true,
         created_at: true,
         updated_at: true,
@@ -83,6 +95,18 @@ export class ApplicationsService {
         typeof a.redirect_urls === 'string'
           ? (JSON.parse(a.redirect_urls) as string[])
           : (a.redirect_urls as unknown as string[]),
+      allowed_origins:
+        typeof a.allowed_origins === 'string'
+          ? (JSON.parse(a.allowed_origins) as string[])
+          : (a.allowed_origins as unknown as string[]),
+      logout_urls:
+        typeof a.logout_urls === 'string'
+          ? (JSON.parse(a.logout_urls) as string[])
+          : (a.logout_urls as unknown as string[]),
+      web_origins:
+        typeof a.web_origins === 'string'
+          ? (JSON.parse(a.web_origins) as string[])
+          : (a.web_origins as unknown as string[]),
     }));
   }
 
@@ -101,6 +125,12 @@ export class ApplicationsService {
         client_id: true,
         application_type: true,
         redirect_urls: true,
+        allowed_origins: true,
+        logout_urls: true,
+        web_origins: true,
+        logo_url: true,
+        primary_color: true,
+        background_color: true,
         status: true,
         created_at: true,
         updated_at: true,
@@ -117,6 +147,18 @@ export class ApplicationsService {
         typeof app.redirect_urls === 'string'
           ? (JSON.parse(app.redirect_urls) as string[])
           : app.redirect_urls,
+      allowed_origins:
+        typeof app.allowed_origins === 'string'
+          ? (JSON.parse(app.allowed_origins) as string[])
+          : app.allowed_origins,
+      logout_urls:
+        typeof app.logout_urls === 'string'
+          ? (JSON.parse(app.logout_urls) as string[])
+          : app.logout_urls,
+      web_origins:
+        typeof app.web_origins === 'string'
+          ? (JSON.parse(app.web_origins) as string[])
+          : app.web_origins,
     };
   }
 

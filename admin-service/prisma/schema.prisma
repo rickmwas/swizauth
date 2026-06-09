@@ -250,6 +250,12 @@ model applications {
   client_secret_hash String
   application_type   String        @db.VarChar(100)
   redirect_urls      Json          @default("[]")
+  allowed_origins    Json          @default("[]")
+  logout_urls        Json          @default("[]")
+  web_origins        Json          @default("[]")
+  logo_url           String?
+  primary_color      String?       @db.VarChar(7)
+  background_color   String?       @db.VarChar(7)
   status             String        @db.VarChar(50)
   created_at         DateTime      @db.Timestamptz(6)
   updated_at         DateTime      @db.Timestamptz(6)

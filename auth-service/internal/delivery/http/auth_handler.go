@@ -1573,4 +1573,346 @@ func (h *AuthHandler) InternalVerifyToken(c *gin.Context) {
 	c.JSON(http.StatusOK, verifyResp)
 }
 
+// Me returns the current authenticated user's profile, organization, and session
+// GET /api/v1/auth/me
+func (h *AuthHandler) Me(c *gin.Context) {
+	// Must be authenticated via Access Token
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "UNAUTHORIZED",
+				"message": "Missing or invalid authorization header",
+			},
+		})
+		return
+	}
 
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := h.tokenSvc.VerifyAccessToken(accessToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INVALID_TOKEN",
+				"message": "Invalid access token",
+			},
+		})
+		return
+	}
+
+	ctx := context.Background()
+
+	// Get user details
+	userIDStr, _ := claims["sub"].(string)
+	userID, _ := uuid.Parse(userIDStr)
+	user, err := h.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "USER_NOT_FOUND",
+				"message": "User not found",
+			},
+		})
+		return
+	}
+
+	// Get session details
+	sessionIDStr, _ := claims["session_id"].(string)
+	sessionUUID, _ := uuid.Parse(sessionIDStr)
+	session, err := h.sessionRepo.GetSession(ctx, sessionUUID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "SESSION_NOT_FOUND",
+				"message": "Session not found",
+			},
+		})
+		return
+	}
+
+	// Extract claims data
+	orgIDStr, _ := claims["org"].(string)
+	email, _ := claims["email"].(string)
+	var roles []string
+	var permissions []string
+
+	if rolesClaim, ok := claims["roles"].([]interface{}); ok {
+		for _, r := range rolesClaim {
+			if rStr, ok := r.(string); ok {
+				roles = append(roles, rStr)
+			}
+		}
+	}
+	if permsClaim, ok := claims["permissions"].([]interface{}); ok {
+		for _, p := range permsClaim {
+			if pStr, ok := p.(string); ok {
+				permissions = append(permissions, pStr)
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"user": gin.H{
+			"id":             user.ID.String(),
+			"email":          user.Email,
+			"username":       user.Username,
+			"firstName":      user.FirstName,
+			"lastName":       user.LastName,
+			"avatarUrl":      user.AvatarURL,
+			"emailVerified":  user.EmailVerified,
+			"phoneVerified":  user.PhoneVerified,
+			"organizationId": user.OrganizationID.String(),
+			"roles":          roles,
+			"permissions":    permissions,
+			"lastLoginAt":    user.LastLoginAt,
+			"createdAt":      user.CreatedAt,
+			"updatedAt":      user.UpdatedAt,
+		},
+		"organization": gin.H{
+			"id":   orgIDStr,
+			"name": "Default Organization", // TODO: Get from claims or DB
+			"slug": "default-org",         // TODO: Get from claims or DB
+			"plan": "free",                // TODO: Get from claims or DB
+		},
+		"session": gin.H{
+			"id":              session.ID.String(),
+			"userId":          session.UserID.String(),
+			"organizationId":  session.OrganizationID.String(),
+			"expiresAt":       session.ExpiresAt,
+			"lastActivityAt":  session.LastActivityAt,
+			"deviceName":      session.DeviceName,
+			"browser":         session.Browser,
+			"ipAddress":       session.IPAddress,
+			"country":         session.Country,
+			"city":            session.City,
+		},
+	})
+}
+
+// Organizations returns the list of organizations the user belongs to
+// GET /api/v1/auth/organizations
+func (h *AuthHandler) Organizations(c *gin.Context) {
+	// Must be authenticated via Access Token
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "UNAUTHORIZED",
+				"message": "Missing or invalid authorization header",
+			},
+		})
+		return
+	}
+
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := h.tokenSvc.VerifyAccessToken(accessToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INVALID_TOKEN",
+				"message": "Invalid access token",
+			},
+		})
+		return
+	}
+
+	// Get user's organizations (for now, just return current one)
+	// TODO: Implement multi-org membership when that feature is added
+	orgIDStr, _ := claims["org"].(string)
+	
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"organizations": []gin.H{
+			{
+				"id":     orgIDStr,
+				"name":   "Default Organization", // TODO: Get from DB
+				"slug":   "default-org",         // TODO: Get from DB
+				"plan":   "free",                // TODO: Get from DB
+				"status": "active",
+			},
+		},
+	})
+}
+
+// SwitchOrganization switches the user's active organization context
+// POST /api/v1/auth/switch-organization
+func (h *AuthHandler) SwitchOrganization(c *gin.Context) {
+	// Must be authenticated via Access Token
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "UNAUTHORIZED",
+				"message": "Missing or invalid authorization header",
+			},
+		})
+		return
+	}
+
+	var req struct {
+		OrganizationID string `json:"organization_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "VALIDATION_ERROR",
+				"message": "Invalid request body parameters",
+			},
+		})
+		return
+	}
+
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := h.tokenSvc.VerifyAccessToken(accessToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INVALID_TOKEN",
+				"message": "Invalid access token",
+			},
+		})
+		return
+	}
+
+	// TODO: Implement actual organization switching logic
+	// For now, just return error as multi-org membership isn't implemented yet
+	c.JSON(http.StatusForbidden, gin.H{
+		"success": false,
+		"error": gin.H{
+			"code":    "FEATURE_NOT_AVAILABLE",
+			"message": "Organization switching is not yet implemented",
+		},
+	})
+}
+
+// UpdateProfile updates the current user's profile information
+// PATCH /api/v1/auth/profile
+func (h *AuthHandler) UpdateProfile(c *gin.Context) {
+	// Must be authenticated via Access Token
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "UNAUTHORIZED",
+				"message": "Missing or invalid authorization header",
+			},
+		})
+		return
+	}
+
+	var req struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email" binding:"required,email"`
+		Username  string `json:"username" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "VALIDATION_ERROR",
+				"message": "Invalid request body parameters",
+			},
+		})
+		return
+	}
+
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := h.tokenSvc.VerifyAccessToken(accessToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INVALID_TOKEN",
+				"message": "Invalid access token",
+			},
+		})
+		return
+	}
+
+	userIDStr, _ := claims["sub"].(string)
+	userID, _ := uuid.Parse(userIDStr)
+	orgIDStr, _ := claims["org"].(string)
+	orgID, _ := uuid.Parse(orgIDStr)
+
+	ctx := context.Background()
+
+	// Check if username is being changed and ensure it's unique within the organization
+	currentUser, err := h.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "USER_NOT_FOUND",
+				"message": "User not found",
+			},
+		})
+		return
+	}
+
+	// If username or email is changing, check for conflicts within the organization
+	if req.Username != *currentUser.Username || strings.ToLower(req.Email) != currentUser.Email {
+		// Check username uniqueness within organization
+		existingUser, _ := h.userRepo.GetUserByUsernameInOrg(ctx, req.Username, orgID)
+		if existingUser != nil && existingUser.ID != userID {
+			c.JSON(http.StatusConflict, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "USERNAME_EXISTS",
+					"message": "Username already exists in this organization",
+				},
+			})
+			return
+		}
+
+		// Check email uniqueness within organization
+		existingUser, _ = h.userRepo.GetUserByEmailInOrg(ctx, strings.ToLower(req.Email), orgID)
+		if existingUser != nil && existingUser.ID != userID {
+			c.JSON(http.StatusConflict, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "EMAIL_EXISTS",
+					"message": "Email already exists in this organization",
+				},
+			})
+			return
+		}
+	}
+
+	// Update user profile
+	updateData := map[string]interface{}{
+		"first_name":   req.FirstName,
+		"last_name":    req.LastName,
+		"email":        strings.ToLower(strings.TrimSpace(req.Email)),
+		"username":     req.Username,
+		"updated_at":   time.Now(),
+	}
+
+	if err := h.userRepo.UpdateUserProfile(ctx, userID, updateData); err != nil {
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "Failed to update profile",
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Profile updated successfully",
+	})
+}
