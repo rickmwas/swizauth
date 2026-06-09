@@ -19,7 +19,8 @@ import (
 	"github.com/rickmwas/swizauth/auth-service/internal/domain"
 )
 
-const baseURL = "http://localhost:8080/api/v1"
+const authBaseURL = "http://localhost:8080/api/v1"
+const adminBaseURL = "http://localhost:3001/api/v1"
 
 func main() {
 	log.Println("Starting SWIZAUTH Go Auth Engine E2E Integration Tester...")
@@ -60,6 +61,13 @@ func main() {
 		log.Println("Cleaning up testing resources...")
 		cleanupDatabase(ctx, pool)
 	}()
+
+	// ============================================================
+	// PHASE 1: AUTH-SERVICE E2E TESTS
+	// ============================================================
+	log.Println("==========================================================")
+	log.Println("PHASE 1: AUTH-SERVICE E2E TESTS")
+	log.Println("==========================================================")
 
 	// ----------------------------------------------------
 	// TEST CASE 1: GET /health
@@ -288,7 +296,7 @@ func main() {
 	assertStatus(resp, http.StatusUnauthorized)
 
 	// Verify success using config INTERNAL_API_SECRET
-	req, _ := http.NewRequest("POST", baseURL+"/internal/verify-token", bytes.NewBuffer(marshalJSON(internalVerifyPayload)))
+	req, _ := http.NewRequest("POST", authBaseURL+"/internal/verify-token", bytes.NewBuffer(marshalJSON(internalVerifyPayload)))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+cfg.InternalApiSecret)
 
@@ -360,18 +368,457 @@ func main() {
 	log.Printf("Rate limit headers present. Limit: %s, Remaining: %s, Reset: %s\n", limitVal, remVal, resetVal)
 
 	log.Println("==========================================================")
-	log.Println("ALL E2E INTEGRATION TEST SUITES PASSED SUCCESSFULLY!")
-	log.Println("The Go Auth Core Engine is fully ready to ship to production!")
+	log.Println("PHASE 1 COMPLETE: All Auth-Service tests passed!")
+	log.Println("==========================================================")
+
+	// ============================================================
+	// PHASE 2: ADMIN-SERVICE CROSS-SERVICE E2E TESTS
+	// ============================================================
+	log.Println("")
+	log.Println("==========================================================")
+	log.Println("PHASE 2: ADMIN-SERVICE CROSS-SERVICE E2E TESTS")
+	log.Println("==========================================================")
+
+	// Seed RBAC data for the test user so JWT includes full permissions
+	log.Println("[SETUP] Seeding permissions, role, and user_roles for admin-service tests...")
+
+	// Seed all required permissions (using ON CONFLICT to be safe if seed.sql was already applied)
+	permissionNames := []struct {
+		id     string
+		name   string
+		module string
+	}{
+		{"e2e-perm-001", "users.read", "users"},
+		{"e2e-perm-002", "users.create", "users"},
+		{"e2e-perm-003", "users.update", "users"},
+		{"e2e-perm-004", "users.delete", "users"},
+		{"e2e-perm-005", "applications.read", "developer"},
+		{"e2e-perm-006", "applications.create", "developer"},
+		{"e2e-perm-007", "applications.update", "developer"},
+		{"e2e-perm-008", "applications.delete", "developer"},
+		{"e2e-perm-009", "api_keys.read", "developer"},
+		{"e2e-perm-010", "api_keys.create", "developer"},
+		{"e2e-perm-011", "api_keys.delete", "developer"},
+		{"e2e-perm-012", "audit_logs.read", "audit"},
+		{"e2e-perm-013", "roles.read", "roles"},
+		{"e2e-perm-014", "roles.create", "roles"},
+		{"e2e-perm-015", "roles.update", "roles"},
+		{"e2e-perm-016", "roles.delete", "roles"},
+	}
+
+	now := time.Now()
+	for _, p := range permissionNames {
+		_, err = pool.Exec(ctx, `
+			INSERT INTO auth.permissions (id, name, description, module, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			ON CONFLICT (name) DO NOTHING
+		`, p.id, p.name, "E2E test permission: "+p.name, p.module, now, now)
+		if err != nil {
+			log.Fatalf("Failed to seed permission '%s': %v", p.name, err)
+		}
+	}
+
+	// Create an admin role for the test organization
+	testRoleID := uuid.New()
+	_, err = pool.Exec(ctx, `
+		INSERT INTO auth.roles (id, organization_id, name, description, is_system, created_at, updated_at)
+		VALUES ($1, $2, 'e2e_admin', 'E2E Test Admin Role', FALSE, $3, $4)
+	`, testRoleID, orgID, now, now)
+	if err != nil {
+		log.Fatalf("Failed to seed e2e_admin role: %v", err)
+	}
+
+	// Map ALL permissions to the admin role
+	_, err = pool.Exec(ctx, `
+		INSERT INTO auth.role_permissions (id, role_id, permission_id, created_at)
+		SELECT gen_random_uuid(), $1, id, $2
+		FROM auth.permissions
+	`, testRoleID, now)
+	if err != nil {
+		log.Fatalf("Failed to map permissions to e2e_admin role: %v", err)
+	}
+
+	// Assign the admin role to the test user
+	_, err = pool.Exec(ctx, `
+		INSERT INTO auth.user_roles (id, user_id, role_id, created_at)
+		VALUES (gen_random_uuid(), $1, $2, $3)
+	`, testUserID, testRoleID, now)
+	if err != nil {
+		log.Fatalf("Failed to assign e2e_admin role to test user: %v", err)
+	}
+	log.Printf("RBAC seeded: role '%s' with all permissions assigned to user '%s'\n", testRoleID, testUserID)
+
+	// Re-login with MFA to get a fresh JWT that contains the seeded permissions
+	log.Println("[SETUP] Re-authenticating to obtain JWT with full admin permissions...")
+	resp, body = makeRequest("POST", "/auth/login", newLoginPayload, "")
+	assertStatus(resp, http.StatusOK)
+	// MFA is enabled, so this returns mfa_required
+	mfaToken = getJSONField(body, "mfa_token").(string)
+	if mfaToken == "" {
+		log.Fatalf("Setup failed: expected MFA challenge on re-login")
+	}
+
+	// Complete MFA verification
+	otpCode, err = totp.GenerateCode(totpSecret, time.Now())
+	if err != nil {
+		log.Fatalf("Failed to generate OTP for admin re-login: %v", err)
+	}
+	resp, body = makeRequest("POST", "/auth/mfa/verify", map[string]interface{}{
+		"mfa_token": mfaToken,
+		"code":      otpCode,
+	}, "")
+	assertStatus(resp, http.StatusOK)
+	adminAccessToken := getJSONField(body, "access_token").(string)
+	if adminAccessToken == "" {
+		log.Fatalf("Setup failed: no access token after MFA verify")
+	}
+	log.Println("Admin JWT obtained with full permissions for cross-service tests")
+
+	// ─── Tracking variables for admin-service test artifacts ────
+	var createdRoleID string
+	var createdAppID string
+	var createdApiKeyID string
+	var invitedUserID string
+
+	// Also create a "member" role for the invitation flow test
+	memberRoleID := uuid.New()
+	_, err = pool.Exec(ctx, `
+		INSERT INTO auth.roles (id, organization_id, name, description, is_system, created_at, updated_at)
+		VALUES ($1, $2, 'e2e_member', 'E2E Test Member Role', FALSE, $3, $4)
+	`, memberRoleID, orgID, now, now)
+	if err != nil {
+		log.Fatalf("Failed to seed e2e_member role: %v", err)
+	}
+
+	// Assign read-only permissions to the member role
+	for _, permName := range []string{"users.read", "applications.read", "api_keys.read"} {
+		_, _ = pool.Exec(ctx, `
+			INSERT INTO auth.role_permissions (id, role_id, permission_id, created_at)
+			SELECT gen_random_uuid(), $1, id, $2
+			FROM auth.permissions WHERE name = $3
+		`, memberRoleID, now, permName)
+	}
+
+	// ----------------------------------------------------
+	// TEST CASE 16: GET /organizations/:id
+	// ----------------------------------------------------
+	log.Println("[TEST] 16. GET /organizations/:id (admin-service)")
+	resp, body = makeAdminRequest("GET", "/organizations/"+orgID.String(), nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	orgName := getJSONField(body, "name")
+	if orgName != "Tester Org" {
+		log.Fatalf("Assert failed: org name is '%v' (expected 'Tester Org')", orgName)
+	}
+	log.Println("Organization lookup via admin-service successful")
+
+	// ----------------------------------------------------
+	// TEST CASE 17: PATCH /organizations/:id
+	// ----------------------------------------------------
+	log.Println("[TEST] 17. PATCH /organizations/:id (admin-service)")
+	resp, body = makeAdminRequest("PATCH", "/organizations/"+orgID.String(), map[string]interface{}{
+		"name": "Tester Org Updated",
+	}, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+
+	// Verify the update persisted
+	resp, body = makeAdminRequest("GET", "/organizations/"+orgID.String(), nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	updatedName := getJSONField(body, "name")
+	if updatedName != "Tester Org Updated" {
+		log.Fatalf("Assert failed: org name after update is '%v' (expected 'Tester Org Updated')", updatedName)
+	}
+	log.Println("Organization update via admin-service successful")
+
+	// ----------------------------------------------------
+	// TEST CASE 18: POST /roles (Create custom role)
+	// ----------------------------------------------------
+	log.Println("[TEST] 18. POST /roles (admin-service)")
+	resp, body = makeAdminRequest("POST", "/roles", map[string]interface{}{
+		"name":        "e2e_custom_reviewer",
+		"description": "Custom role created by E2E tester",
+	}, adminAccessToken)
+	assertStatus(resp, http.StatusCreated)
+	createdRoleID = getJSONField(body, "id").(string)
+	if createdRoleID == "" {
+		log.Fatalf("Assert failed: role creation did not return an id")
+	}
+	log.Printf("Custom role created: %s\n", createdRoleID)
+
+	// ----------------------------------------------------
+	// TEST CASE 19: GET /roles (List org roles)
+	// ----------------------------------------------------
+	log.Println("[TEST] 19. GET /roles (admin-service)")
+	resp, body = makeAdminRequest("GET", "/roles", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	rolesArray := parseJSONArray(body)
+	if len(rolesArray) < 1 {
+		log.Fatalf("Assert failed: expected at least 1 role, got %d", len(rolesArray))
+	}
+	log.Printf("Listed %d roles for the organization\n", len(rolesArray))
+
+	// ----------------------------------------------------
+	// TEST CASE 20: GET /permissions (List system permissions)
+	// ----------------------------------------------------
+	log.Println("[TEST] 20. GET /permissions (admin-service)")
+	resp, body = makeAdminRequest("GET", "/permissions", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	permsArray := parseJSONArray(body)
+	if len(permsArray) < 12 {
+		log.Fatalf("Assert failed: expected at least 12 permissions, got %d", len(permsArray))
+	}
+	log.Printf("Listed %d system permissions\n", len(permsArray))
+
+	// Get the first permission ID for the assign test
+	firstPermID := permsArray[0]["id"].(string)
+
+	// ----------------------------------------------------
+	// TEST CASE 21: POST /permissions/assign
+	// ----------------------------------------------------
+	log.Println("[TEST] 21. POST /permissions/assign (admin-service)")
+	resp, body = makeAdminRequest("POST", "/permissions/assign", map[string]interface{}{
+		"role_id":        createdRoleID,
+		"permission_ids": []string{firstPermID},
+	}, adminAccessToken)
+	assertStatus(resp, http.StatusCreated)
+	assertJSONField(body, "success", true)
+	assignedCount := getJSONField(body, "assigned")
+	log.Printf("Assigned %v permission(s) to custom role\n", assignedCount)
+
+	// ----------------------------------------------------
+	// TEST CASE 22: POST /memberships/invite
+	// ----------------------------------------------------
+	log.Println("[TEST] 22. POST /memberships/invite (admin-service)")
+	resp, body = makeAdminRequest("POST", "/memberships/invite", map[string]interface{}{
+		"email":   "e2e-invited@swizauth.local",
+		"role_id": memberRoleID.String(),
+	}, adminAccessToken)
+	assertStatus(resp, http.StatusCreated)
+	assertJSONField(body, "success", true)
+	invitationToken := getJSONField(body, "invitation_token").(string)
+	if invitationToken == "" {
+		log.Fatalf("Assert failed: invitation_token is empty")
+	}
+	log.Printf("Invitation token generated for e2e-invited@swizauth.local\n")
+
+	// ----------------------------------------------------
+	// TEST CASE 23: POST /memberships/accept
+	// ----------------------------------------------------
+	log.Println("[TEST] 23. POST /memberships/accept (admin-service, public)")
+	resp, body = makeAdminRequest("POST", "/memberships/accept", map[string]interface{}{
+		"token":      invitationToken,
+		"username":   "e2e_invited_user",
+		"password":   "InvitedPass123!",
+		"first_name": "Invited",
+		"last_name":  "Member",
+	}, "") // No auth token — public endpoint
+	assertStatus(resp, http.StatusCreated)
+	assertJSONField(body, "success", true)
+	invitedUserID = getJSONField(body, "user_id").(string)
+	if invitedUserID == "" {
+		log.Fatalf("Assert failed: invitation accept did not return a user_id")
+	}
+	log.Printf("Invitation accepted, new member registered: %s\n", invitedUserID)
+
+	// ----------------------------------------------------
+	// TEST CASE 24: GET /memberships (List org members)
+	// ----------------------------------------------------
+	log.Println("[TEST] 24. GET /memberships (admin-service)")
+	resp, body = makeAdminRequest("GET", "/memberships?page=1&limit=50", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	membersData := getJSONField(body, "data").([]interface{})
+	membersMeta := getJSONField(body, "meta").(map[string]interface{})
+	totalMembers := membersMeta["total"].(float64)
+	if len(membersData) < 2 {
+		log.Fatalf("Assert failed: expected at least 2 members (admin + invited), got %d", len(membersData))
+	}
+	log.Printf("Listed %d members (total: %.0f) for the organization\n", len(membersData), totalMembers)
+
+	// ----------------------------------------------------
+	// TEST CASE 25: POST /applications (Create app)
+	// ----------------------------------------------------
+	log.Println("[TEST] 25. POST /applications (admin-service)")
+	resp, body = makeAdminRequest("POST", "/applications", map[string]interface{}{
+		"name":             "E2E Test Application",
+		"description":      "Application created by E2E tester",
+		"application_type": "web",
+		"redirect_urls":    []string{"http://localhost:4000/callback"},
+	}, adminAccessToken)
+	assertStatus(resp, http.StatusCreated)
+	createdAppID = getJSONField(body, "id").(string)
+	clientID := getJSONField(body, "client_id").(string)
+	clientSecret := getJSONField(body, "client_secret").(string)
+	if createdAppID == "" || clientID == "" || clientSecret == "" {
+		log.Fatalf("Assert failed: application creation missing id, client_id, or client_secret")
+	}
+	log.Printf("Application created: id=%s, client_id=%s\n", createdAppID, clientID)
+
+	// ----------------------------------------------------
+	// TEST CASE 26: GET /applications (List apps)
+	// ----------------------------------------------------
+	log.Println("[TEST] 26. GET /applications (admin-service)")
+	resp, body = makeAdminRequest("GET", "/applications", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	appsArray := parseJSONArray(body)
+	if len(appsArray) < 1 {
+		log.Fatalf("Assert failed: expected at least 1 application, got %d", len(appsArray))
+	}
+	log.Printf("Listed %d applications for the organization\n", len(appsArray))
+
+	// ----------------------------------------------------
+	// TEST CASE 27: POST /applications/:id/rotate-secret
+	// ----------------------------------------------------
+	log.Println("[TEST] 27. POST /applications/:id/rotate-secret (admin-service)")
+	resp, body = makeAdminRequest("POST", "/applications/"+createdAppID+"/rotate-secret", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	newClientSecret := getJSONField(body, "client_secret").(string)
+	if newClientSecret == "" || newClientSecret == clientSecret {
+		log.Fatalf("Assert failed: secret rotation did not produce a new distinct secret")
+	}
+	log.Println("Client secret rotation successful — new secret differs from original")
+
+	// ----------------------------------------------------
+	// TEST CASE 28: POST /api-keys (Create API key)
+	// ----------------------------------------------------
+	log.Println("[TEST] 28. POST /api-keys (admin-service)")
+	resp, body = makeAdminRequest("POST", "/api-keys", map[string]interface{}{
+		"name":   "E2E Test API Key",
+		"scopes": []string{"users.read", "applications.read"},
+	}, adminAccessToken)
+	assertStatus(resp, http.StatusCreated)
+	createdApiKeyID = getJSONField(body, "id").(string)
+	apiKeyPlaintext := getJSONField(body, "key").(string)
+	if createdApiKeyID == "" || apiKeyPlaintext == "" {
+		log.Fatalf("Assert failed: API key creation missing id or plaintext key")
+	}
+	log.Printf("API key created: id=%s, key=%s...\n", createdApiKeyID, apiKeyPlaintext[:16])
+
+	// ----------------------------------------------------
+	// TEST CASE 29: GET /api-keys (List API keys)
+	// ----------------------------------------------------
+	log.Println("[TEST] 29. GET /api-keys (admin-service)")
+	resp, body = makeAdminRequest("GET", "/api-keys", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	apiKeysArray := parseJSONArray(body)
+	if len(apiKeysArray) < 1 {
+		log.Fatalf("Assert failed: expected at least 1 API key, got %d", len(apiKeysArray))
+	}
+	log.Printf("Listed %d API keys for the organization\n", len(apiKeysArray))
+
+	// ----------------------------------------------------
+	// TEST CASE 30: DELETE /api-keys/:id (Revoke API key)
+	// ----------------------------------------------------
+	log.Println("[TEST] 30. DELETE /api-keys/:id (admin-service)")
+	resp, body = makeAdminRequest("DELETE", "/api-keys/"+createdApiKeyID, nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	assertJSONField(body, "success", true)
+
+	// Verify the key is marked as revoked in the database
+	var apiKeyRevoked bool
+	err = pool.QueryRow(ctx, `SELECT revoked FROM developer.api_keys WHERE id = $1`, createdApiKeyID).Scan(&apiKeyRevoked)
+	if err != nil || !apiKeyRevoked {
+		log.Fatalf("Assert failed: API key not marked as revoked in DB (revoked=%t)", apiKeyRevoked)
+	}
+	log.Println("API key revocation successful and verified in database")
+
+	// ----------------------------------------------------
+	// TEST CASE 31: GET /audit (Query audit logs)
+	// ----------------------------------------------------
+	log.Println("[TEST] 31. GET /audit (admin-service)")
+	resp, body = makeAdminRequest("GET", "/audit?page=1&limit=50", nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	auditMeta := getJSONField(body, "meta").(map[string]interface{})
+	auditData := getJSONField(body, "data").([]interface{})
+	auditTotal := auditMeta["total"].(float64)
+	log.Printf("Audit log query returned %d entries (total: %.0f)\n", len(auditData), auditTotal)
+
+	// ----------------------------------------------------
+	// TEST CASE 32: DELETE /memberships/:userId (Remove member)
+	// ----------------------------------------------------
+	log.Println("[TEST] 32. DELETE /memberships/:userId (admin-service)")
+	resp, body = makeAdminRequest("DELETE", "/memberships/"+invitedUserID, nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	assertJSONField(body, "success", true)
+
+	// Verify soft-deletion in database
+	var memberStatus string
+	err = pool.QueryRow(ctx, `SELECT status FROM auth.users WHERE id = $1`, invitedUserID).Scan(&memberStatus)
+	if err != nil || memberStatus != "disabled" {
+		log.Fatalf("Assert failed: removed member status is '%s' (expected 'disabled')", memberStatus)
+	}
+	log.Println("Member removal successful — user soft-deleted and status set to 'disabled'")
+
+	// ----------------------------------------------------
+	// TEST CASE 33: DELETE /roles/:id (Delete custom role)
+	// ----------------------------------------------------
+	log.Println("[TEST] 33. DELETE /roles/:id (admin-service)")
+	resp, body = makeAdminRequest("DELETE", "/roles/"+createdRoleID, nil, adminAccessToken)
+	assertStatus(resp, http.StatusOK)
+	assertJSONField(body, "success", true)
+
+	// Verify deletion in database
+	var deletedRoleCount int
+	err = pool.QueryRow(ctx, `SELECT COUNT(*) FROM auth.roles WHERE id = $1`, createdRoleID).Scan(&deletedRoleCount)
+	if err != nil || deletedRoleCount != 0 {
+		log.Fatalf("Assert failed: role still exists in DB after deletion (count=%d)", deletedRoleCount)
+	}
+	log.Println("Custom role deletion successful and verified in database")
+
+	// ----------------------------------------------------
+	// TEST CASE 34: 403 Negative Test (PermissionsGuard)
+	// ----------------------------------------------------
+	log.Println("[TEST] 34. 403 PermissionsGuard negative test (admin-service)")
+
+	// Register a second user with no roles/permissions
+	unprivRegPayload := map[string]interface{}{
+		"organization_id": orgID.String(),
+		"email":           "e2e-unprivileged@swizauth.local",
+		"password":        "UnprivPass123!",
+		"first_name":      "Unprivileged",
+		"last_name":       "User",
+	}
+	resp, body = makeRequest("POST", "/auth/register", unprivRegPayload, "")
+	assertStatus(resp, http.StatusCreated)
+
+	// Login as unprivileged user (no MFA enabled for this user)
+	unprivLoginPayload := map[string]interface{}{
+		"email":    "e2e-unprivileged@swizauth.local",
+		"password": "UnprivPass123!",
+	}
+	resp, body = makeRequest("POST", "/auth/login", unprivLoginPayload, "")
+	assertStatus(resp, http.StatusOK)
+	unprivToken := getJSONField(body, "access_token").(string)
+	if unprivToken == "" {
+		log.Fatalf("Setup failed: unprivileged user did not get an access token")
+	}
+
+	// Try to create a role — should get 403 Forbidden (no roles.create permission)
+	resp, body = makeAdminRequest("POST", "/roles", map[string]interface{}{
+		"name":        "should_fail_role",
+		"description": "This should be blocked",
+	}, unprivToken)
+	assertStatus(resp, http.StatusForbidden)
+	log.Println("403 PermissionsGuard correctly blocked unprivileged user from creating a role")
+
+	// ============================================================
+	// ALL TESTS PASSED
+	// ============================================================
+	log.Println("")
+	log.Println("==========================================================")
+	log.Println("ALL 34 E2E INTEGRATION TEST SUITES PASSED SUCCESSFULLY!")
+	log.Println("Go Auth Engine + NestJS Admin Service are fully verified!")
+	log.Println("The system is ready for production.")
 	log.Println("==========================================================")
 }
 
-func makeRequest(method, path string, payload map[string]interface{}, token string) (*http.Response, []byte) {
+// ─── HTTP HELPERS ────────────────────────────────────────────
+
+func doRequest(base, method, path string, payload map[string]interface{}, token string) (*http.Response, []byte) {
 	var bodyReader io.Reader
 	if payload != nil {
 		bodyReader = bytes.NewBuffer(marshalJSON(payload))
 	}
 
-	req, err := http.NewRequest(method, baseURL+path, bodyReader)
+	req, err := http.NewRequest(method, base+path, bodyReader)
 	if err != nil {
 		log.Fatalf("Failed to create HTTP request: %v", err)
 	}
@@ -384,7 +831,7 @@ func makeRequest(method, path string, payload map[string]interface{}, token stri
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("HTTP request to %s failed: %v", baseURL+path, err)
+		log.Fatalf("HTTP request to %s failed: %v", base+path, err)
 	}
 	defer resp.Body.Close()
 
@@ -395,6 +842,16 @@ func makeRequest(method, path string, payload map[string]interface{}, token stri
 
 	return resp, bodyBytes
 }
+
+func makeRequest(method, path string, payload map[string]interface{}, token string) (*http.Response, []byte) {
+	return doRequest(authBaseURL, method, path, payload, token)
+}
+
+func makeAdminRequest(method, path string, payload map[string]interface{}, token string) (*http.Response, []byte) {
+	return doRequest(adminBaseURL, method, path, payload, token)
+}
+
+// ─── JSON / ASSERTION HELPERS ────────────────────────────────
 
 func marshalJSON(data interface{}) []byte {
 	bytes, err := json.Marshal(data)
@@ -425,13 +882,27 @@ func assertJSONField(body []byte, field string, expected interface{}) {
 	}
 }
 
+func parseJSONArray(body []byte) []map[string]interface{} {
+	var arr []map[string]interface{}
+	if err := json.Unmarshal(body, &arr); err != nil {
+		log.Fatalf("Failed to parse JSON array: %v. Body was: %s", err, string(body))
+	}
+	return arr
+}
+
 func hashSHA256(input string) string {
 	h := sha256.New()
 	h.Write([]byte(input))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+// ─── DATABASE CLEANUP ────────────────────────────────────────
+
 func cleanupDatabase(ctx context.Context, pool *pgxpool.Pool) {
+	// Delete test users first (before org cascade) to ensure clean removal
+	_, _ = pool.Exec(ctx, `DELETE FROM auth.users WHERE email IN ('tester@swizauth.local', 'e2e-invited@swizauth.local', 'e2e-unprivileged@swizauth.local')`)
+	// Delete test organization (cascades to roles, sessions, applications, api_keys, audit_logs)
 	_, _ = pool.Exec(ctx, `DELETE FROM public.organizations WHERE slug = 'tester-org'`)
-	_, _ = pool.Exec(ctx, `DELETE FROM auth.users WHERE email = 'tester@swizauth.local'`)
+	// Clean up E2E-seeded permissions (only remove if they have the e2e prefix IDs)
+	_, _ = pool.Exec(ctx, `DELETE FROM auth.permissions WHERE id LIKE 'e2e-perm-%'`)
 }

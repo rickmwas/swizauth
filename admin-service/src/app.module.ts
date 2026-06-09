@@ -11,6 +11,7 @@ import { RbacModule } from './rbac/rbac.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { AuditModule } from './audit/audit.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuditModule } from './audit/audit.module';
     ApplicationsModule,
     ApiKeysModule,
     AuditModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

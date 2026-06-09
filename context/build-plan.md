@@ -97,13 +97,13 @@ This build plan details the sequenced steps for implementing the SWIZAUTH multi-
 ## Phase 4: Next.js Dashboard & Auth Portal
 
 ### 4.1 UI Framework Setup
-- [ ] Initialize Next.js project with TailwindCSS.
-- [ ] Load HSL custom properties into `global.css` file matching target design systems tokens.
-- [ ] Configure Layout layouts, navbar grids, Sidebar menu panels.
+- [x] Initialize Next.js project with TailwindCSS.
+- [x] Load HSL custom properties into `global.css` file matching target design systems tokens.
+- [x] Configure Layout layouts, navbar grids, Sidebar menu panels.
 
 ### 4.2 Screens Implementation
-- [ ] **Auth Portal:** Design split-screen Login/Registration forms with disabled submit buttons during loading and clear inline form errors.
-- [ ] **Org Settings Dashboard:** Table of active members with actions menu (Role modification, Revoke member), dynamic pagination controls, and debounced search fields.
-- [ ] **Developer Panel:** Form to register applications, client key display modals, and interactive API Keys checklists.
-- [ ] **Audit Logs Dashboard:** Large tables showing actions history with date filtering controls and empty result panels.
+- [x] **Auth Portal:** Design split-screen Login/Registration forms with disabled submit buttons during loading and clear inline form errors.
+- [x] **Org Settings Dashboard:** Table of active members with actions menu (Role modification, Revoke member), dynamic pagination controls, and debounced search fields.
+- [x] **Developer Panel:** Form to register applications, client key display modals, and interactive API Keys checklists.
+- [x] **Audit Logs Dashboard:** Large tables showing actions history with date filtering controls and empty result panels.
 

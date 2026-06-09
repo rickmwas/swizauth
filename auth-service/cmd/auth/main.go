@@ -101,6 +101,8 @@ func main() {
 		rdb,
 	)
 
+	healthHandler := deliveryHttp.NewHealthHandler(dbPool, rdb)
+
 	// 5. Initialize Gin Engine without default logger/recovery middleware
 	r := gin.New()
 
@@ -111,19 +113,14 @@ func main() {
 	r.Use(middleware.Recovery())
 
 	// 6. Define Routes
+	// Health check endpoints (outside API versioning)
+	r.GET("/health", healthHandler.HealthHandler)
+	r.GET("/ready", healthHandler.ReadinessHandler)
+
 	apiV1 := r.Group("/api/v1")
 	{
-		// Basic health check route
-		apiV1.GET("/health", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"success":      true,
-				"service":      "auth-service",
-				"status":       "healthy",
-				"environment":  cfg.Env,
-				"database":     "connected",
-				"redis":        "connected",
-			})
-		})
+		// Basic health check route (legacy)
+		apiV1.GET("/health", healthHandler.HealthHandler)
 
 		// Authentication Core Endpoints
 		auth := apiV1.Group("/auth")

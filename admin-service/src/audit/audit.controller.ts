@@ -29,7 +29,7 @@ export class AuditController {
    *  - limit: results per page (default 20)
    */
   @Get()
-  @Permissions('audit.read')
+  @Permissions('audit_logs.read')
   query(
     @GetUser() user: AuthenticatedUser,
     @Query('action') action?: string,
