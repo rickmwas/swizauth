@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowRight, Calendar, User } from "lucide-react";
+import { ArrowRight, Calendar, User, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 const blogPosts = [
   {
@@ -61,6 +62,40 @@ const blogPosts = [
 ];
 
 export default function Blog() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to subscribe");
+      }
+
+      setSuccess(true);
+      setEmail("");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -172,16 +207,38 @@ export default function Blog() {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Subscribe to our newsletter for the latest insights on enterprise identity infrastructure and security best practices.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="px-6 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-            <button className="px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:shadow-lg transition-all">
-              Subscribe
-            </button>
-          </div>
+          <form onSubmit={handleSubscribe} className="max-w-md mx-auto">
+            {success ? (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-lg p-4 mb-4 font-medium animate-in fade-in">
+                Thanks for subscribing! Check your inbox for a welcome email.
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <input
+                    type="email"
+                    required
+                    disabled={loading}
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1 px-6 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {loading ? "Subscribing..." : "Subscribe"}
+                  </button>
+                </div>
+                {error && (
+                  <p className="text-destructive text-sm mt-2 text-center animate-in fade-in">{error}</p>
+                )}
+              </>
+            )}
+          </form>
         </div>
       </section>
 

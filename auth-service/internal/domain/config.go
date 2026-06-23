@@ -25,6 +25,11 @@ type Config struct {
 	RefreshTokenExpiryDays int      `env:"REFRESH_TOKEN_EXPIRY_DAYS" envDefault:"30"`
 	MfaEncryptionKey       string   `env:"MFA_ENCRYPTION_KEY,required"`
 	InternalApiSecret      string   `env:"INTERNAL_API_SECRET,required"`
+	SmtpHost               string   `env:"SMTP_HOST"`
+	SmtpPort               int      `env:"SMTP_PORT" envDefault:"587"`
+	SmtpUser               string   `env:"SMTP_USER"`
+	SmtpPass               string   `env:"SMTP_PASS"`
+	SmtpSender             string   `env:"SMTP_SENDER"`
 }
 
 // LoadConfig parses environment variables and configures the service settings, failing fast on missing required variables

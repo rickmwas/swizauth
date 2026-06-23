@@ -33,6 +33,7 @@ type AuthHandler struct {
 	tokenSvc         service.TokenService
 	cryptoSvc        service.CryptoService
 	totpSvc          service.TotpService
+	emailSvc         service.EmailService
 	redis            *redis.Client
 }
 
@@ -48,6 +49,7 @@ func NewAuthHandler(
 	tokenSvc service.TokenService,
 	cryptoSvc service.CryptoService,
 	totpSvc service.TotpService,
+	emailSvc service.EmailService,
 	rdb *redis.Client,
 ) *AuthHandler {
 	return &AuthHandler{
@@ -61,6 +63,7 @@ func NewAuthHandler(
 		tokenSvc:         tokenSvc,
 		cryptoSvc:        cryptoSvc,
 		totpSvc:          totpSvc,
+		emailSvc:         emailSvc,
 		redis:            rdb,
 	}
 }
@@ -181,9 +184,9 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	if err := h.verificationRepo.CreateEmailVerificationToken(c.Request.Context(), userID, vTokenHash, vExpiry); err != nil {
 		c.Error(fmt.Errorf("failed to create email verification token: %w", err))
 	} else {
-		// Log the plaintext verification token to stdout for development use
-		fmt.Printf("{\"timestamp\":\"%s\",\"level\":\"INFO\",\"service\":\"auth-service\",\"message\":\"[DEVELOPMENT] Email verification link for %s: http://localhost:3000/auth/verify-email?token=%s\"}\n",
-			time.Now().Format(time.RFC3339), user.Email, verificationToken)
+		if err := h.emailSvc.SendVerificationEmail(user.Email, verificationToken); err != nil {
+			c.Error(fmt.Errorf("failed to send verification email: %w", err))
+		}
 	}
 
 	c.JSON(http.StatusCreated, domain.RegisterResponse{
@@ -1057,9 +1060,9 @@ func (h *AuthHandler) PasswordResetRequest(c *gin.Context) {
 		return
 	}
 
-	// Log plaintext token for development
-	fmt.Printf("{\"timestamp\":\"%s\",\"level\":\"INFO\",\"service\":\"auth-service\",\"message\":\"[DEVELOPMENT] Password reset link for %s: http://localhost:3000/auth/password-reset/confirm?token=%s\"}\n",
-		time.Now().Format(time.RFC3339), user.Email, resetToken)
+	if err := h.emailSvc.SendPasswordResetEmail(user.Email, resetToken); err != nil {
+		c.Error(fmt.Errorf("failed to send password reset email: %w", err))
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

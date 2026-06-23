@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -15,6 +15,47 @@ export default function Contact() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [message, setMessage] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !message) return;
+
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, company, message }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+
+      setSuccess(true);
+      setName("");
+      setEmail("");
+      setCompany("");
+      setMessage("");
+    } catch (err: any) {
+      setError(err.message || "Failed to submit. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
@@ -61,26 +102,67 @@ export default function Contact() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Form */}
             <div className="md:col-span-2">
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {success && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-lg p-4 font-medium animate-in fade-in">
+                    Message sent successfully! We will get back to you shortly.
+                  </div>
+                )}
+                {error && (
+                  <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-4 font-medium animate-in fade-in">
+                    {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium mb-2">Name</label>
-                    <Input placeholder="Your name" className="bg-secondary border-border" />
+                    <Input
+                      required
+                      disabled={loading}
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-secondary border-border"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Email</label>
-                    <Input type="email" placeholder="your@email.com" className="bg-secondary border-border" />
+                    <Input
+                      required
+                      type="email"
+                      disabled={loading}
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="bg-secondary border-border"
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Company</label>
-                  <Input placeholder="Your company" className="bg-secondary border-border" />
+                  <Input
+                    disabled={loading}
+                    placeholder="Your company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="bg-secondary border-border"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Message</label>
-                  <Textarea placeholder="Tell us how we can help..." className="bg-secondary border-border min-h-32" />
+                  <Textarea
+                    required
+                    disabled={loading}
+                    placeholder="Tell us how we can help..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="bg-secondary border-border min-h-32"
+                  />
                 </div>
-                <Button className="btn-primary w-full">Send Message</Button>
+                <Button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {loading ? "Sending..." : "Send Message"}
+                </Button>
               </form>
             </div>
 

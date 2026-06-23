@@ -89,6 +89,7 @@ func main() {
 	}
 
 	totpSvc := service.NewTotpService("TSAUTH")
+	emailSvc := service.NewEmailService(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUser, cfg.SmtpPass, cfg.SmtpSender, cfg.Env)
 
 	// 4.3 Initialize HTTP Handlers
 	authHandler := deliveryHttp.NewAuthHandler(
@@ -102,6 +103,7 @@ func main() {
 		tokenSvc,
 		cryptoSvc,
 		totpSvc,
+		emailSvc,
 		rdb,
 	)
 
