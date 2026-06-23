@@ -1,7 +1,7 @@
 {
-  "name": "@swizauth/js",
+  "name": "@tsauth/js",
   "version": "1.0.0",
-  "description": "SwizAuth JavaScript SDK for client-side authentication",
+  "description": "TSAUTH JavaScript SDK for client-side authentication",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -18,10 +18,10 @@
     "authentication",
     "oauth",
     "sdk",
-    "swizauth",
+    "TSAUTH",
     "identity"
   ],
-  "author": "SwizAuth Team",
+  "author": "TSAUTH Team",
   "license": "MIT",
   "dependencies": {
     "jwt-decode": "^4.0.0"

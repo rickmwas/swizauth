@@ -7,16 +7,18 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/rickmwas/swizauth/auth-service/internal/domain"
-	"github.com/rickmwas/swizauth/auth-service/internal/repository"
-	"github.com/rickmwas/swizauth/auth-service/internal/service"
+	"github.com/rickmwas/tsauth/auth-service/internal/domain"
+	"github.com/rickmwas/tsauth/auth-service/internal/repository"
+	"github.com/rickmwas/tsauth/auth-service/internal/service"
 )
 
 // AuthHandler holds route handler methods and injected dependencies
@@ -25,6 +27,8 @@ type AuthHandler struct {
 	sessionRepo      repository.SessionRepository
 	verificationRepo repository.VerificationRepository
 	mfaRepo          repository.MfaRepository
+	organizationRepo repository.OrganizationRepository
+	onboardingRepo   repository.OnboardingRepository
 	passwordSvc      service.PasswordService
 	tokenSvc         service.TokenService
 	cryptoSvc        service.CryptoService
@@ -38,6 +42,8 @@ func NewAuthHandler(
 	sessionRepo repository.SessionRepository,
 	verificationRepo repository.VerificationRepository,
 	mfaRepo repository.MfaRepository,
+	organizationRepo repository.OrganizationRepository,
+	onboardingRepo repository.OnboardingRepository,
 	passwordSvc service.PasswordService,
 	tokenSvc service.TokenService,
 	cryptoSvc service.CryptoService,
@@ -49,12 +55,22 @@ func NewAuthHandler(
 		sessionRepo:      sessionRepo,
 		verificationRepo: verificationRepo,
 		mfaRepo:          mfaRepo,
+		organizationRepo: organizationRepo,
+		onboardingRepo:   onboardingRepo,
 		passwordSvc:      passwordSvc,
 		tokenSvc:         tokenSvc,
 		cryptoSvc:        cryptoSvc,
 		totpSvc:          totpSvc,
 		redis:            rdb,
 	}
+}
+
+func slugify(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	re := regexp.MustCompile(`[^a-z0-9]+`)
+	s = re.ReplaceAllString(s, "-")
+	s = strings.Trim(s, "-")
+	return s
 }
 
 // Register registers a new user under an existing organization
@@ -174,6 +190,158 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Success: true,
 		Message: "Registration successful",
 		UserID:  userID.String(),
+	})
+}
+
+// Onboard creates a new organization and user, establishes a session, and returns tokens.
+// POST /api/v1/auth/onboard
+func (h *AuthHandler) Onboard(c *gin.Context) {
+	var req struct {
+		Email           string `json:"email" binding:"required,email"`
+		Password        string `json:"password" binding:"required"`
+		OrganizationName string `json:"organization_name" binding:"required"`
+		Slug            string `json:"slug"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": gin.H{"code": "VALIDATION_ERROR", "message": "Invalid request body parameters"}})
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	// Create org
+	orgID, err := uuid.NewV7()
+	if err != nil {
+		orgID = uuid.New()
+	}
+	now := time.Now()
+	org := &domain.Organization{
+		ID: orgID,
+		Name: req.OrganizationName,
+		Slug: req.Slug,
+		Status: "active",
+		Plan: "FREE",
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	if org.Slug == "" {
+		org.Slug = slugify(org.Name)
+	}
+
+	originalSlug := org.Slug
+	for i := 1; ; i++ {
+		if _, err := h.organizationRepo.GetOrganizationBySlug(ctx, org.Slug); err != nil {
+			if errors.Is(err, repository.ErrOrganizationNotFound) {
+				break
+			}
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to validate organization slug"}})
+			return
+		}
+
+		org.Slug = fmt.Sprintf("%s-%d", originalSlug, i)
+	}
+
+	// Hash password
+	passwordHash, err := h.passwordSvc.HashPassword(req.Password)
+	if err != nil {
+		c.Error(fmt.Errorf("failed to hash password: %w", err))
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Internal server error occurred"}})
+		return
+	}
+
+	userID, err := uuid.NewV7()
+	if err != nil {
+		userID = uuid.New()
+	}
+
+	emailClean := strings.ToLower(strings.TrimSpace(req.Email))
+	user := &domain.User{
+		ID: userID,
+		OrganizationID: org.ID,
+		Email: emailClean,
+		Username: &emailClean,
+		PasswordHash: passwordHash,
+		EmailVerified: false,
+		PhoneVerified: false,
+		Status: "active",
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	// Create session data
+	sessionID, err := uuid.NewV7()
+	if err != nil {
+		sessionID = uuid.New()
+	}
+	userAgent := c.GetHeader("User-Agent")
+	ipAddress := c.ClientIP()
+	sessionExpiry := time.Now().Add(30 * 24 * time.Hour)
+	session := &domain.Session{
+		ID: sessionID,
+		UserID: user.ID,
+		OrganizationID: org.ID,
+		IPAddress: &ipAddress,
+		UserAgent: &userAgent,
+		LastActivityAt: time.Now(),
+		ExpiresAt: sessionExpiry,
+		Revoked: false,
+		CreatedAt: time.Now(),
+	}
+
+	accessToken, err := h.tokenSvc.GenerateAccessToken(user, org.Plan, sessionID, []string{}, []string{})
+	if err != nil {
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to issue access token"}})
+		return
+	}
+
+	rawRefreshToken, err := h.tokenSvc.GenerateRefreshToken()
+	if err != nil {
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to issue refresh token"}})
+		return
+	}
+
+	hasher := sha256.New()
+	hasher.Write([]byte(rawRefreshToken))
+	hashedRefreshToken := hex.EncodeToString(hasher.Sum(nil))
+
+	// Ensure organization owner is set and perform transactional insert for org, user, session, and refresh token
+	org.OwnerID = &user.ID
+	if err := h.onboardingRepo.CreateOrgUserSession(ctx, org, user, session, hashedRefreshToken, sessionExpiry); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			c.JSON(http.StatusConflict, gin.H{"success": false, "error": gin.H{"code": "ONBOARDING_CONFLICT", "message": "A record with the same organization slug or email already exists"}})
+			return
+		}
+
+		if errors.Is(err, repository.ErrEmailAlreadyExists) {
+			c.JSON(http.StatusConflict, gin.H{"success": false, "error": gin.H{"code": "EMAIL_EXISTS", "message": "Email address already registered"}})
+			return
+		}
+
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": gin.H{"code": "INTERNAL_SERVER_ERROR", "message": "Failed to complete onboarding"}})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"tokens": gin.H{
+			"access_token": accessToken,
+			"refresh_token": rawRefreshToken,
+		},
+		"user": gin.H{
+			"id": user.ID.String(),
+			"email": user.Email,
+		},
+		"organization": gin.H{
+			"id": org.ID.String(),
+			"name": org.Name,
+			"slug": org.Slug,
+			"plan": org.Plan,
+		},
 	})
 }
 
@@ -299,7 +467,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Generate tokens
-	accessToken, err := h.tokenSvc.GenerateAccessToken(user, sessionID, roles, permissions)
+	plan := h.getOrganizationPlan(ctx, user.OrganizationID)
+	accessToken, err := h.tokenSvc.GenerateAccessToken(user, plan, sessionID, roles, permissions)
 	if err != nil {
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -737,7 +906,8 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	}
 
 	// Generate Access Token
-	accessToken, err := h.tokenSvc.GenerateAccessToken(user, session.ID, roles, permissions)
+	plan := h.getOrganizationPlan(ctx, user.OrganizationID)
+	accessToken, err := h.tokenSvc.GenerateAccessToken(user, plan, session.ID, roles, permissions)
 	if err != nil {
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -1373,7 +1543,8 @@ func (h *AuthHandler) MfaVerify(c *gin.Context) {
 		CreatedAt:      now,
 	}
 
-	accessToken, err := h.tokenSvc.GenerateAccessToken(user, sessionID, roles, permissions)
+	plan := h.getOrganizationPlan(ctx, user.OrganizationID)
+	accessToken, err := h.tokenSvc.GenerateAccessToken(user, plan, sessionID, roles, permissions)
 	if err != nil {
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -1619,6 +1790,29 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
+	organization, err := h.organizationRepo.GetOrganizationByID(ctx, user.OrganizationID)
+	if err != nil {
+		if errors.Is(err, repository.ErrOrganizationNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "NOT_FOUND",
+					"message": "Organization not found",
+				},
+			})
+			return
+		}
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "Failed to load organization",
+			},
+		})
+		return
+	}
+
 	// Get session details
 	sessionIDStr, _ := claims["session_id"].(string)
 	sessionUUID, _ := uuid.Parse(sessionIDStr)
@@ -1635,8 +1829,6 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	}
 
 	// Extract claims data
-	orgIDStr, _ := claims["org"].(string)
-	email, _ := claims["email"].(string)
 	var roles []string
 	var permissions []string
 
@@ -1674,10 +1866,12 @@ func (h *AuthHandler) Me(c *gin.Context) {
 			"updatedAt":      user.UpdatedAt,
 		},
 		"organization": gin.H{
-			"id":   orgIDStr,
-			"name": "Default Organization", // TODO: Get from claims or DB
-			"slug": "default-org",         // TODO: Get from claims or DB
-			"plan": "free",                // TODO: Get from claims or DB
+			"id":      organization.ID.String(),
+			"name":    organization.Name,
+			"slug":    organization.Slug,
+			"logoUrl": organization.LogoURL,
+			"plan":    organization.Plan,
+			"status":  organization.Status,
 		},
 		"session": gin.H{
 			"id":              session.ID.String(),
@@ -1725,17 +1919,53 @@ func (h *AuthHandler) Organizations(c *gin.Context) {
 
 	// Get user's organizations (for now, just return current one)
 	// TODO: Implement multi-org membership when that feature is added
+	ctx := context.Background()
 	orgIDStr, _ := claims["org"].(string)
-	
+	orgID, err := uuid.Parse(orgIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "VALIDATION_ERROR",
+				"message": "Invalid organization identifier in token",
+			},
+		})
+		return
+	}
+
+	organization, err := h.organizationRepo.GetOrganizationByID(ctx, orgID)
+	if err != nil {
+		if errors.Is(err, repository.ErrOrganizationNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "NOT_FOUND",
+					"message": "Organization not found",
+				},
+			})
+			return
+		}
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "Failed to load organizations",
+			},
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"organizations": []gin.H{
 			{
-				"id":     orgIDStr,
-				"name":   "Default Organization", // TODO: Get from DB
-				"slug":   "default-org",         // TODO: Get from DB
-				"plan":   "free",                // TODO: Get from DB
-				"status": "active",
+				"id":      organization.ID.String(),
+				"name":    organization.Name,
+				"slug":    organization.Slug,
+				"logoUrl": organization.LogoURL,
+				"plan":    organization.Plan,
+				"status":  organization.Status,
 			},
 		},
 	})
@@ -1772,8 +2002,7 @@ func (h *AuthHandler) SwitchOrganization(c *gin.Context) {
 	}
 
 	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
-	claims, err := h.tokenSvc.VerifyAccessToken(accessToken)
-	if err != nil {
+	if _, err := h.tokenSvc.VerifyAccessToken(accessToken); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"error": gin.H{
@@ -1915,4 +2144,12 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 		"success": true,
 		"message": "Profile updated successfully",
 	})
+}
+
+func (h *AuthHandler) getOrganizationPlan(ctx context.Context, orgID uuid.UUID) string {
+	org, err := h.organizationRepo.GetOrganizationByID(ctx, orgID)
+	if err != nil {
+		return "FREE"
+	}
+	return org.Plan
 }

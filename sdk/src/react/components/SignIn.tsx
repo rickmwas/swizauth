@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { useAuth } from '../SwizAuthProvider';
+import { useAuth } from '../TSAUTHProvider';
 
 export interface SignInProps {
   redirectUrl?: string;
@@ -58,37 +58,37 @@ export function SignIn({
   };
 
   const styles = {
-    '--swizauth-primary': appearance.primaryColor || '#6366f1',
-    '--swizauth-background': appearance.backgroundColor || '#ffffff',
+    '--tsauth-primary': appearance.primaryColor || '#6366f1',
+    '--tsauth-background': appearance.backgroundColor || '#ffffff',
   } as React.CSSProperties;
 
   if (!isLoaded) {
     return (
-      <div className={`swizauth-container ${className}`} style={styles}>
-        <div className="swizauth-loading">
-          <div className="swizauth-spinner"></div>
+      <div className={`TSAUTH-container ${className}`} style={styles}>
+        <div className="TSAUTH-loading">
+          <div className="TSAUTH-spinner"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`swizauth-container ${className}`} style={styles}>
-      <div className="swizauth-card">
+    <div className={`TSAUTH-container ${className}`} style={styles}>
+      <div className="TSAUTH-card">
         {appearance.logoUrl && (
-          <div className="swizauth-logo">
+          <div className="TSAUTH-logo">
             <img src={appearance.logoUrl} alt="Logo" />
           </div>
         )}
         
-        <div className="swizauth-header">
-          <h1 className="swizauth-title">Sign in to your account</h1>
-          <p className="swizauth-subtitle">Welcome back! Please enter your details.</p>
+        <div className="TSAUTH-header">
+          <h1 className="TSAUTH-title">Sign in to your account</h1>
+          <p className="TSAUTH-subtitle">Welcome back! Please enter your details.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="swizauth-form">
-          <div className="swizauth-field">
-            <label className="swizauth-label">
+        <form onSubmit={handleSubmit} className="TSAUTH-form">
+          <div className="TSAUTH-field">
+            <label className="TSAUTH-label">
               {loginMethod === 'email' ? 'Email' : 'Username'}
             </label>
             <input
@@ -96,39 +96,39 @@ export function SignIn({
               value={credentials.email}
               onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
               placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter your username'}
-              className="swizauth-input"
+              className="TSAUTH-input"
               required
               disabled={isLoading}
             />
           </div>
 
-          <div className="swizauth-field">
-            <label className="swizauth-label">Password</label>
+          <div className="TSAUTH-field">
+            <label className="TSAUTH-label">Password</label>
             <input
               type="password"
               value={credentials.password}
               onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
               placeholder="Enter your password"
-              className="swizauth-input"
+              className="TSAUTH-input"
               required
               disabled={isLoading}
             />
           </div>
 
           {error && (
-            <div className="swizauth-error" role="alert">
+            <div className="TSAUTH-error" role="alert">
               {error}
             </div>
           )}
 
           <button
             type="submit"
-            className="swizauth-button swizauth-button-primary"
+            className="TSAUTH-button TSAUTH-button-primary"
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <div className="swizauth-spinner swizauth-spinner-sm"></div>
+                <div className="TSAUTH-spinner TSAUTH-spinner-sm"></div>
                 Signing in...
               </>
             ) : (
@@ -136,11 +136,11 @@ export function SignIn({
             )}
           </button>
 
-          <div className="swizauth-toggle">
+          <div className="TSAUTH-toggle">
             <button
               type="button"
               onClick={() => setLoginMethod(loginMethod === 'email' ? 'username' : 'email')}
-              className="swizauth-link"
+              className="TSAUTH-link"
               disabled={isLoading}
             >
               Sign in with {loginMethod === 'email' ? 'username' : 'email'} instead

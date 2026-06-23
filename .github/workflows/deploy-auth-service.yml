@@ -29,7 +29,7 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Auth Service deployed successfully to https://swizauth-auth.fly.dev"
+          echo "✅ Auth Service deployed successfully to https://tsauth-auth.fly.dev"
 
       - name: Notify deployment failure
         if: failure()

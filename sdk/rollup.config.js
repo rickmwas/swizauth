@@ -8,9 +8,9 @@ export default [
   {
     input: 'src/index.ts',
     output: {
-      file: 'dist/swizauth.umd.js',
+      file: 'dist/tsauth.umd.js',
       format: 'umd',
-      name: 'SwizAuth',
+      name: 'TSAuth',
       globals: {
         'react': 'React',
         'react-dom': 'ReactDOM'
@@ -30,7 +30,7 @@ export default [
   {
     input: 'src/index.ts',
     output: {
-      file: 'dist/swizauth.esm.js',
+      file: 'dist/tsauth.esm.js',
       format: 'es'
     },
     external: ['react', 'react-dom', 'jwt-decode'],

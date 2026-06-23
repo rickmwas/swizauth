@@ -45,7 +45,7 @@ export async function loginAction(prevState: any, formData: FormData): Promise<A
     if (data.mfa_required) {
       const cookieStore = await cookies();
       cookieStore.set({
-        name: "swizauth_mfa_challenge",
+        name: "tsauth_mfa_challenge",
         value: data.mfa_token,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -92,7 +92,7 @@ export async function loginAction(prevState: any, formData: FormData): Promise<A
 export async function verifyMfaAction(prevState: any, formData: FormData): Promise<ActionResponse> {
   const code = formData.get("code")?.toString();
   const cookieStore = await cookies();
-  const mfaToken = cookieStore.get("swizauth_mfa_challenge")?.value;
+  const mfaToken = cookieStore.get("tsauth_mfa_challenge")?.value;
 
   if (!mfaToken) {
     return {
@@ -126,7 +126,7 @@ export async function verifyMfaAction(prevState: any, formData: FormData): Promi
     }
 
     // Success! Setup final cookies and clear MFA cookie
-    cookieStore.delete("swizauth_mfa_challenge");
+    cookieStore.delete("tsauth_mfa_challenge");
     
     cookieStore.set({
       name: "access_token",
@@ -300,7 +300,7 @@ export async function logoutAction() {
 
   cookieStore.delete("access_token");
   cookieStore.delete("refresh_token");
-  cookieStore.delete("swizauth_mfa_challenge");
+  cookieStore.delete("tsauth_mfa_challenge");
   
   redirect("/auth/login");
 }

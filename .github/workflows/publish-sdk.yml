@@ -1,4 +1,4 @@
-name: Publish SwizAuth SDK
+name: Publish TSAUTH SDK
 
 on:
   push:
@@ -81,16 +81,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: sdk-v${{ github.run_number }}
-          release_name: SwizAuth SDK v${{ github.run_number }}
+          release_name: TSAUTH SDK v${{ github.run_number }}
           body: |
-            🚀 SwizAuth JavaScript SDK Release
+            🚀 TSAUTH JavaScript SDK Release
             
             ## What's Changed
             - Updated SDK components and features
             
             ## Installation
             ```bash
-            npm install @swizauth/js@latest
+            npm install @tsauth/js@latest
             ```
             
             ## Documentation

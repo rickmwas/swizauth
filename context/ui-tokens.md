@@ -1,4 +1,4 @@
-# UI Tokens: SWIZAUTH
+# UI Tokens: TSAUTH
 
 This document defines the visual design system tokens mapping to TailwindCSS variables, optimized for a sleek, premium, enterprise-grade IAM dashboard.
 

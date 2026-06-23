@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# SwizAuth Local Production Deployment Script
+# TSAUTH Local Production Deployment Script
 set -e
 
-echo "🚀 Starting SwizAuth Local Production Deployment..."
+echo "🚀 Starting TSAUTH Local Production Deployment..."
 
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
@@ -90,16 +90,16 @@ done
 
 # Initialize database with seed data
 echo "🗄️  Initializing database..."
-if docker exec swizauth-postgres-prod psql -U postgres -d swizauth -c "SELECT COUNT(*) FROM public.organizations;" 2>/dev/null | grep -q "0"; then
+if docker exec tsauth-postgres-prod psql -U postgres -d TSAUTH -c "SELECT COUNT(*) FROM public.organizations;" 2>/dev/null | grep -q "0"; then
     echo "📊 Seeding database..."
-    docker exec -i swizauth-postgres-prod psql -U postgres -d swizauth < migrations/seed.sql
+    docker exec -i tsauth-postgres-prod psql -U postgres -d TSAUTH < migrations/seed.sql
     echo "✅ Database seeded successfully"
 else
     echo "ℹ️  Database already contains data, skipping seed"
 fi
 
 echo ""
-echo "🎉 SwizAuth deployment complete!"
+echo "🎉 TSAUTH deployment complete!"
 echo ""
 echo "📋 Service URLs:"
 echo "   • Dashboard:     http://localhost:3000"
@@ -112,6 +112,6 @@ echo "   • Stop services: docker-compose -f docker-compose.prod.yml --env-file
 echo "   • Restart:       ./scripts/deploy-local.sh"
 echo ""
 echo "🔐 Test Login:"
-echo "   Email:    admin@swizfusion.com"
+echo "   Email:    admin@terrasept.com"
 echo "   Password: Password123!"
 echo ""

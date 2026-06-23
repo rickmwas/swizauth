@@ -1,4 +1,4 @@
--- Down Migration: Teardown SWIZAUTH schema and tables
+-- Down Migration: Teardown TSAUTH schema and tables
 
 -- 1. Drop Foreign Key on Organizations (resolves circular dependency on drop)
 ALTER TABLE IF EXISTS public.organizations DROP CONSTRAINT IF EXISTS fk_organizations_owner;

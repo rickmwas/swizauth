@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SwizAuth Fly.io Deployment Script
+# TSAUTH Fly.io Deployment Script
 set -e
 
 REGION="iad"
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "🚀 Starting SwizAuth Fly.io Deployment..."
+echo "🚀 Starting TSAUTH Fly.io Deployment..."
 
 # Check if Fly CLI is installed
 if ! command -v fly &> /dev/null; then
@@ -61,20 +61,20 @@ if [ "$CREATE_APPS" = true ]; then
     
     # Create auth service app
     cd auth-service
-    echo "Creating swizauth-auth app..."
-    fly apps create swizauth-auth --org personal || echo "App may already exist"
+    echo "Creating tsauth-auth app..."
+    fly apps create tsauth-auth --org personal || echo "App may already exist"
     cd ..
     
     # Create admin service app
     cd admin-service  
-    echo "Creating swizauth-admin app..."
-    fly apps create swizauth-admin --org personal || echo "App may already exist"
+    echo "Creating tsauth-admin app..."
+    fly apps create tsauth-admin --org personal || echo "App may already exist"
     cd ..
     
     # Create dashboard app
     cd dashboard
-    echo "Creating swizauth-dashboard app..."
-    fly apps create swizauth-dashboard --org personal || echo "App may already exist"
+    echo "Creating tsauth-dashboard app..."
+    fly apps create tsauth-dashboard --org personal || echo "App may already exist"
     cd ..
     
     echo "✅ All applications created"
@@ -112,22 +112,22 @@ fi
 # Add PostgreSQL database
 echo "🗄️  Setting up PostgreSQL..."
 cd auth-service
-fly postgres create swizauth-db --region "$REGION" --initial-cluster-size 1 || echo "Database may already exist"
+fly postgres create tsauth-db --region "$REGION" --initial-cluster-size 1 || echo "Database may already exist"
 
 # Attach database to services
 echo "Attaching database to auth service..."
-fly postgres attach swizauth-db --app swizauth-auth || echo "Database may already be attached"
+fly postgres attach tsauth-db --app tsauth-auth || echo "Database may already be attached"
 cd ..
 
 cd admin-service
 echo "Attaching database to admin service..."
-fly postgres attach swizauth-db --app swizauth-admin || echo "Database may already be attached"
+fly postgres attach tsauth-db --app tsauth-admin || echo "Database may already be attached"
 cd ..
 
 # Add Redis
 echo "🔴 Setting up Redis..."
 cd auth-service
-fly redis create --name swizauth-redis --region "$REGION" || echo "Redis may already exist"
+fly redis create --name tsauth-redis --region "$REGION" || echo "Redis may already exist"
 cd ..
 
 # Deploy services
@@ -148,9 +148,9 @@ cd ..
 
 # Get app URLs
 echo "📋 Getting application URLs..."
-AUTH_URL=$(fly apps list | grep swizauth-auth | awk '{print $2}')
-ADMIN_URL=$(fly apps list | grep swizauth-admin | awk '{print $2}')
-DASHBOARD_URL=$(fly apps list | grep swizauth-dashboard | awk '{print $2}')
+AUTH_URL=$(fly apps list | grep tsauth-auth | awk '{print $2}')
+ADMIN_URL=$(fly apps list | grep tsauth-admin | awk '{print $2}')
+DASHBOARD_URL=$(fly apps list | grep tsauth-dashboard | awk '{print $2}')
 
 # Set service URLs as secrets
 echo "🔧 Configuring service URLs..."
@@ -169,7 +169,7 @@ fly secrets set CORS_ALLOWED_ORIGINS="https://$DASHBOARD_URL,https://$ADMIN_URL"
 cd ..
 
 echo ""
-echo "🎉 SwizAuth deployed to Fly.io!"
+echo "🎉 TSAUTH deployed to Fly.io!"
 echo ""
 echo "📋 Application URLs:"
 echo "   • Dashboard:     https://$DASHBOARD_URL"
@@ -178,12 +178,12 @@ echo "   • Auth Service:  https://$AUTH_URL"
 echo ""
 echo "📌 Next steps:"
 echo "   1. Connect to PostgreSQL and run seed data:"
-echo "      fly postgres connect -a swizauth-db"
+echo "      fly postgres connect -a tsauth-db"
 echo "      # Then run the contents of migrations/seed.sql"
 echo "   2. Test authentication flows"
 echo "   3. Configure custom domain (optional)"
 echo ""
 echo "🔐 Test Login:"
-echo "   Email:    admin@swizfusion.com"
+echo "   Email:    admin@terrasept.com"
 echo "   Password: Password123!"
 echo ""

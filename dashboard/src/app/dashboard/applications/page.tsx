@@ -185,7 +185,7 @@ export default function ApplicationsPage() {
             Applications Workspace
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Register and manage OAuth client applications to integrate SwizAuth authentication.
+            Register and manage OAuth client applications to integrate TSAUTH authentication.
           </p>
         </div>
         <button
@@ -219,7 +219,7 @@ export default function ApplicationsPage() {
             ))}
         </div>
       ) : error ? (
-        <div className="bg-card border border-border rounded-xl p-12 text-center flex flex-col items-center justify-center space-y-3">
+        <div className="card-premium p-12 text-center flex flex-col items-center justify-center space-y-3">
           <AlertCircle className="w-10 h-10 text-destructive" />
           <p className="text-sm font-semibold text-foreground">Failed to load applications</p>
           <p className="text-xs text-muted-foreground max-w-sm">{error}</p>
@@ -231,7 +231,7 @@ export default function ApplicationsPage() {
           </button>
         </div>
       ) : apps.length === 0 ? (
-        <div className="bg-card border border-border rounded-xl p-16 text-center flex flex-col items-center justify-center space-y-4">
+        <div className="card-premium p-16 text-center flex flex-col items-center justify-center space-y-4">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent text-accent-foreground">
             <Terminal className="w-6 h-6" />
           </div>
@@ -248,7 +248,7 @@ export default function ApplicationsPage() {
           {apps.map((app) => (
             <div
               key={app.id}
-              className="bg-card border border-border hover:border-primary/50 transition-all rounded-xl p-6 shadow-sm shadow-black/5 flex flex-col justify-between"
+              className="group card-premium hover:border-primary/50 transition-all flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
@@ -309,7 +309,7 @@ export default function ApplicationsPage() {
       {/* Creation Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsCreateOpen(false)}
               className="absolute right-4 top-4 text-muted-foreground hover:text-foreground focus:outline-none"
@@ -322,7 +322,7 @@ export default function ApplicationsPage() {
               <span>Register Application</span>
             </h3>
             <p className="text-xs text-muted-foreground mb-6">
-              Create an integration client for your application to communicate with SwizAuth.
+              Create an integration client for your application to communicate with TSAUTH.
             </p>
 
             {createError && (
@@ -413,7 +413,7 @@ export default function ApplicationsPage() {
       {/* Show Credentials Modal (Show once) */}
       {isCredentialsOpen && createdCredentials && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <h3 className="text-lg font-display font-bold text-foreground flex items-center gap-2 mb-2">
               <Shield className="w-5 h-5 text-emerald-500" />
               <span>Application Credentials</span>
@@ -479,7 +479,7 @@ export default function ApplicationsPage() {
       {/* Confirmation Rotation secret Dialog */}
       {isConfirmRotateOpen && selectedApp && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <h3 className="text-md font-display font-bold text-foreground flex items-center gap-2 mb-2">
               <AlertCircle className="w-5 h-5 text-destructive" />
               <span>Rotate Client Secret?</span>

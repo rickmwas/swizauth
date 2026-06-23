@@ -3,9 +3,9 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: swizauth-postgres
+    container_name: tsauth-postgres
     environment:
-      POSTGRES_DB: swizauth
+      POSTGRES_DB: TSAUTH
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -16,7 +16,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: swizauth-redis
+    container_name: tsauth-redis
     ports:
       - "6379:6379"
     volumes:

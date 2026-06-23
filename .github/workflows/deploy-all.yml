@@ -161,11 +161,11 @@ jobs:
     steps:
       - name: Deployment Summary
         run: |
-          echo "🚀 SwizAuth Deployment Summary"
+          echo "🚀 TSAUTH Deployment Summary"
           echo "================================"
           
           if [[ "${{ needs.deploy-auth.result }}" == "success" ]]; then
-            echo "✅ Auth Service: https://swizauth-auth.fly.dev"
+            echo "✅ Auth Service: https://tsauth-auth.fly.dev"
           elif [[ "${{ needs.deploy-auth.result }}" == "failure" ]]; then
             echo "❌ Auth Service: Deployment failed"
           else
@@ -173,7 +173,7 @@ jobs:
           fi
           
           if [[ "${{ needs.deploy-admin.result }}" == "success" ]]; then
-            echo "✅ Admin Service: https://swizauth-admin.fly.dev"
+            echo "✅ Admin Service: https://tsauth-admin.fly.dev"
           elif [[ "${{ needs.deploy-admin.result }}" == "failure" ]]; then
             echo "❌ Admin Service: Deployment failed"
           else
@@ -181,7 +181,7 @@ jobs:
           fi
           
           if [[ "${{ needs.deploy-dashboard.result }}" == "success" ]]; then
-            echo "✅ Dashboard: https://swizauth-dashboard.fly.dev"
+            echo "✅ Dashboard: https://tsauth-dashboard.fly.dev"
           elif [[ "${{ needs.deploy-dashboard.result }}" == "failure" ]]; then
             echo "❌ Dashboard: Deployment failed" 
           else

@@ -20,6 +20,8 @@ import { Permissions } from '../common/decorators/permissions.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 
+import { PlanLimitsGuard } from '../common/guards/plan-limits.guard';
+
 @Controller('memberships')
 export class MembershipsController {
   constructor(private readonly membershipsService: MembershipsService) {}
@@ -29,7 +31,7 @@ export class MembershipsController {
    * Creates an invitation token for a new member to join the org.
    */
   @Post('invite')
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard, PermissionsGuard, PlanLimitsGuard)
   @Permissions('users.create')
   invite(
     @GetUser() user: AuthenticatedUser,

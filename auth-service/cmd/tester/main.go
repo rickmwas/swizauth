@@ -16,14 +16,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pquerna/otp/totp"
 
-	"github.com/rickmwas/swizauth/auth-service/internal/domain"
+	"github.com/rickmwas/tsauth/auth-service/internal/domain"
 )
 
 const authBaseURL = "http://localhost:8080/api/v1"
 const adminBaseURL = "http://localhost:3001/api/v1"
 
 func main() {
-	log.Println("Starting SWIZAUTH Go Auth Engine E2E Integration Tester...")
+	log.Println("Starting TSAUTH Go Auth Engine E2E Integration Tester...")
 
 	// 1. Load configuration
 	cfg, err := domain.LoadConfig()
@@ -84,7 +84,7 @@ func main() {
 	log.Println("[TEST] 2. POST /auth/register")
 	regPayload := map[string]interface{}{
 		"organization_id": orgID.String(),
-		"email":           "tester@swizauth.local",
+		"email":           "tester@tsauth.local",
 		"password":        "SecurePass12345!",
 		"first_name":      "EndToEnd",
 		"last_name":       "Tester",
@@ -134,7 +134,7 @@ func main() {
 	// ----------------------------------------------------
 	log.Println("[TEST] 4. POST /auth/login")
 	loginPayload := map[string]interface{}{
-		"email":    "tester@swizauth.local",
+		"email":    "tester@tsauth.local",
 		"password": "SecurePass12345!",
 	}
 	resp, body = makeRequest("POST", "/auth/login", loginPayload, "")
@@ -317,7 +317,7 @@ func main() {
 	// ----------------------------------------------------
 	log.Println("[TEST] 14. POST /auth/password-reset")
 	resetReqPayload := map[string]interface{}{
-		"email": "tester@swizauth.local",
+		"email": "tester@tsauth.local",
 	}
 	resp, body = makeRequest("POST", "/auth/password-reset/request", resetReqPayload, "")
 	assertStatus(resp, http.StatusOK)
@@ -346,7 +346,7 @@ func main() {
 
 	// Authenticate with new password
 	newLoginPayload := map[string]interface{}{
-		"email":    "tester@swizauth.local",
+		"email":    "tester@tsauth.local",
 		"password": "NewSecurePass999!",
 	}
 	resp, body = makeRequest("POST", "/auth/login", newLoginPayload, "")
@@ -589,7 +589,7 @@ func main() {
 	// ----------------------------------------------------
 	log.Println("[TEST] 22. POST /memberships/invite (admin-service)")
 	resp, body = makeAdminRequest("POST", "/memberships/invite", map[string]interface{}{
-		"email":   "e2e-invited@swizauth.local",
+		"email":   "e2e-invited@tsauth.local",
 		"role_id": memberRoleID.String(),
 	}, adminAccessToken)
 	assertStatus(resp, http.StatusCreated)
@@ -598,7 +598,7 @@ func main() {
 	if invitationToken == "" {
 		log.Fatalf("Assert failed: invitation_token is empty")
 	}
-	log.Printf("Invitation token generated for e2e-invited@swizauth.local\n")
+	log.Printf("Invitation token generated for e2e-invited@tsauth.local\n")
 
 	// ----------------------------------------------------
 	// TEST CASE 23: POST /memberships/accept
@@ -771,7 +771,7 @@ func main() {
 	// Register a second user with no roles/permissions
 	unprivRegPayload := map[string]interface{}{
 		"organization_id": orgID.String(),
-		"email":           "e2e-unprivileged@swizauth.local",
+		"email":           "e2e-unprivileged@tsauth.local",
 		"password":        "UnprivPass123!",
 		"first_name":      "Unprivileged",
 		"last_name":       "User",
@@ -781,7 +781,7 @@ func main() {
 
 	// Login as unprivileged user (no MFA enabled for this user)
 	unprivLoginPayload := map[string]interface{}{
-		"email":    "e2e-unprivileged@swizauth.local",
+		"email":    "e2e-unprivileged@tsauth.local",
 		"password": "UnprivPass123!",
 	}
 	resp, body = makeRequest("POST", "/auth/login", unprivLoginPayload, "")
@@ -900,7 +900,7 @@ func hashSHA256(input string) string {
 
 func cleanupDatabase(ctx context.Context, pool *pgxpool.Pool) {
 	// Delete test users first (before org cascade) to ensure clean removal
-	_, _ = pool.Exec(ctx, `DELETE FROM auth.users WHERE email IN ('tester@swizauth.local', 'e2e-invited@swizauth.local', 'e2e-unprivileged@swizauth.local')`)
+	_, _ = pool.Exec(ctx, `DELETE FROM auth.users WHERE email IN ('tester@tsauth.local', 'e2e-invited@tsauth.local', 'e2e-unprivileged@tsauth.local')`)
 	// Delete test organization (cascades to roles, sessions, applications, api_keys, audit_logs)
 	_, _ = pool.Exec(ctx, `DELETE FROM public.organizations WHERE slug = 'tester-org'`)
 	// Clean up E2E-seeded permissions (only remove if they have the e2e prefix IDs)

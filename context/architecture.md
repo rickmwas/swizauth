@@ -1,6 +1,6 @@
-# Architecture Specification: SWIZAUTH
+# Architecture Specification: TSAUTH
 
-SWIZAUTH is built on a Service-Oriented Architecture (SOA) separating core identity verification from management interfaces.
+TSAUTH is built on a Service-Oriented Architecture (SOA) separating core identity verification from management interfaces.
 
 ---
 
@@ -70,7 +70,7 @@ SWIZAUTH is built on a Service-Oriented Architecture (SOA) separating core ident
 ---
 
 ## 3. Multi-Tenant Strategy
-SWIZAUTH implements tenant isolation via the Shared Database, Shared Schema (logical separation) model.
+TSAUTH implements tenant isolation via the Shared Database, Shared Schema (logical separation) model.
 
 - **Tenant Isolation Key:** `organization_id` (UUIDv7) must be present in every organization-specific table.
 - **Enforced Tables:** `users`, `roles`, `applications`, `sessions`, `audit_logs`, `security_events`, `api_keys`, etc.

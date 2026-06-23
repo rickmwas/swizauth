@@ -7,6 +7,7 @@ export interface AuthenticatedUser {
   organizationId: string;
   roles: string[];
   permissions: string[];
+  plan?: string;
 }
 
 export interface OrganizationDetails {
@@ -35,6 +36,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       organizationId: claims.org as string,
       roles: (claims.roles as string[]) || [],
       permissions: (claims.permissions as string[]) || [],
+      plan: claims.plan as string || "FREE",
     };
   } catch (err) {
     console.error("Failed to decode user token:", err);

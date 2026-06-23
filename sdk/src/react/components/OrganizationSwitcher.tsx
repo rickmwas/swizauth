@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../SwizAuthProvider';
+import { useAuth } from '../TSAUTHProvider';
 import { Organization } from '../../types';
 
 export interface OrganizationSwitcherProps {
@@ -82,8 +82,8 @@ export function OrganizationSwitcher({
   };
 
   const styles = {
-    '--swizauth-primary': appearance.primaryColor || '#6366f1',
-    '--swizauth-background': appearance.backgroundColor || '#ffffff',
+    '--tsauth-primary': appearance.primaryColor || '#6366f1',
+    '--tsauth-background': appearance.backgroundColor || '#ffffff',
   } as React.CSSProperties;
 
   if (!isLoaded || !organization) {
@@ -91,72 +91,72 @@ export function OrganizationSwitcher({
   }
 
   return (
-    <div className={`swizauth-org-switcher ${className}`} style={styles}>
+    <div className={`TSAUTH-org-switcher ${className}`} style={styles}>
       <button
-        className="swizauth-org-trigger"
+        className="TSAUTH-org-trigger"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
       >
-        <div className="swizauth-org-info">
+        <div className="TSAUTH-org-info">
           {organization.logoUrl ? (
             <img 
               src={organization.logoUrl} 
               alt={organization.name}
-              className="swizauth-org-logo"
+              className="TSAUTH-org-logo"
             />
           ) : (
-            <div className="swizauth-org-avatar">
+            <div className="TSAUTH-org-avatar">
               {organization.name.charAt(0).toUpperCase()}
             </div>
           )}
-          <div className="swizauth-org-details">
-            <div className="swizauth-org-name">{organization.name}</div>
-            <div className="swizauth-org-plan">{organization.plan}</div>
+          <div className="TSAUTH-org-details">
+            <div className="TSAUTH-org-name">{organization.name}</div>
+            <div className="TSAUTH-org-plan">{organization.plan}</div>
           </div>
         </div>
-        <div className={`swizauth-chevron ${isOpen ? 'swizauth-chevron-up' : 'swizauth-chevron-down'}`}>
+        <div className={`TSAUTH-chevron ${isOpen ? 'TSAUTH-chevron-up' : 'TSAUTH-chevron-down'}`}>
           ▼
         </div>
       </button>
 
       {isOpen && (
-        <div className="swizauth-org-dropdown">
-          <div className="swizauth-org-list">
+        <div className="TSAUTH-org-dropdown">
+          <div className="TSAUTH-org-list">
             {organizations.map((org) => (
               <button
                 key={org.id}
-                className={`swizauth-org-option ${
-                  org.id === organization.id ? 'swizauth-org-option-active' : ''
+                className={`TSAUTH-org-option ${
+                  org.id === organization.id ? 'TSAUTH-org-option-active' : ''
                 }`}
                 onClick={() => switchOrganization(org)}
                 disabled={isLoading}
               >
-                <div className="swizauth-org-info">
+                <div className="TSAUTH-org-info">
                   {org.logoUrl ? (
                     <img 
                       src={org.logoUrl} 
                       alt={org.name}
-                      className="swizauth-org-logo"
+                      className="TSAUTH-org-logo"
                     />
                   ) : (
-                    <div className="swizauth-org-avatar">
+                    <div className="TSAUTH-org-avatar">
                       {org.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <div className="swizauth-org-details">
-                    <div className="swizauth-org-name">{org.name}</div>
-                    <div className="swizauth-org-plan">{org.plan}</div>
+                  <div className="TSAUTH-org-details">
+                    <div className="TSAUTH-org-name">{org.name}</div>
+                    <div className="TSAUTH-org-plan">{org.plan}</div>
                   </div>
                 </div>
                 {org.id === organization.id && (
-                  <div className="swizauth-check">✓</div>
+                  <div className="TSAUTH-check">✓</div>
                 )}
               </button>
             ))}
           </div>
           
           {organizations.length === 0 && (
-            <div className="swizauth-org-empty">
+            <div className="TSAUTH-org-empty">
               No other organizations available
             </div>
           )}
@@ -164,8 +164,8 @@ export function OrganizationSwitcher({
       )}
 
       {isLoading && (
-        <div className="swizauth-org-loading">
-          <div className="swizauth-spinner swizauth-spinner-sm"></div>
+        <div className="TSAUTH-org-loading">
+          <div className="TSAUTH-spinner TSAUTH-spinner-sm"></div>
         </div>
       )}
     </div>

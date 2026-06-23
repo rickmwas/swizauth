@@ -1,4 +1,4 @@
-module github.com/rickmwas/swizauth/auth-service
+module github.com/rickmwas/tsauth/auth-service
 
 go 1.26.4
 

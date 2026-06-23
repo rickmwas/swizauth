@@ -48,7 +48,7 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Dashboard deployed successfully to https://swizauth-dashboard.fly.dev"
+          echo "✅ Dashboard deployed successfully to https://tsauth-dashboard.fly.dev"
 
       - name: Notify deployment failure
         if: failure()

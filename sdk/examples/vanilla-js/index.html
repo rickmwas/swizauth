@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwizAuth SDK Demo</title>
+    <title>TSAuth SDK Demo</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -75,19 +75,19 @@
             display: block;
         }
     </style>
-    <!-- Include SwizAuth CSS -->
-    <link rel="stylesheet" href="../../src/styles/swizauth.css">
+    <!-- Include TSAuth CSS -->
+    <link rel="stylesheet" href="../../src/styles/tsauth.css">
 </head>
 <body>
     <div class="container">
-        <h1>SwizAuth JavaScript SDK Demo</h1>
-        <p>This demo shows how to integrate SwizAuth authentication into your application using the JavaScript SDK.</p>
+        <h1>TSAuth JavaScript SDK Demo</h1>
+        <p>This demo shows how to integrate TSAuth authentication into your application using the JavaScript SDK.</p>
         
         <!-- Configuration Section -->
         <div class="demo-section">
             <h2>Configuration</h2>
-            <p>First, configure your SwizAuth client:</p>
-            <pre><code>const swizAuth = new SwizAuth.SwizAuthClient({
+            <p>First, configure your TSAuth client:</p>
+            <pre><code>const swizAuth = new TSAuth.TSAuthClient({
   clientId: 'your_client_id_here',
   domain: 'http://localhost:8080',
   organizationId: 'your_org_id_here' // Optional: pre-set organization
@@ -131,7 +131,7 @@
                         <pre><code>&lt;div id="signin-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
 // Using vanilla JS
-SwizAuth.renderSignIn('#signin-widget', {
+TSAuth.renderSignIn('#signin-widget', {
   onSignIn: () => console.log('Signed in!'),
   onError: (error) => console.error('Error:', error),
   appearance: {
@@ -157,7 +157,7 @@ SwizAuth.renderSignIn('#signin-widget', {
                         <h4>Code</h4>
                         <pre><code>&lt;div id="signup-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
-SwizAuth.renderSignUp('#signup-widget', {
+TSAuth.renderSignUp('#signup-widget', {
   onSignUp: () => console.log('Signed up!'),
   onError: (error) => console.error('Error:', error),
   appearance: {
@@ -183,7 +183,7 @@ SwizAuth.renderSignUp('#signup-widget', {
                         <h4>Code</h4>
                         <pre><code>&lt;div id="profile-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
-SwizAuth.renderUserProfile('#profile-widget', {
+TSAuth.renderUserProfile('#profile-widget', {
   onUpdate: () => console.log('Profile updated!'),
   onError: (error) => console.error('Error:', error)
 });
@@ -205,7 +205,7 @@ SwizAuth.renderUserProfile('#profile-widget', {
                         <h4>Code</h4>
                         <pre><code>&lt;div id="org-switcher-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
-SwizAuth.renderOrganizationSwitcher('#org-switcher-widget', {
+TSAuth.renderOrganizationSwitcher('#org-switcher-widget', {
   onSwitch: (org) => console.log('Switched to:', org),
   appearance: {
     primaryColor: '#6366f1'
@@ -253,26 +253,26 @@ SwizAuth.renderOrganizationSwitcher('#org-switcher-widget', {
         <div class="demo-section">
             <h2>Integration Guide</h2>
             <h3>1. Install the SDK</h3>
-            <pre><code>npm install @swizauth/js
+            <pre><code>npm install @tsauth/js
 # or
-yarn add @swizauth/js</code></pre>
+yarn add @tsauth/js</code></pre>
 
             <h3>2. Import and Initialize</h3>
-            <pre><code>import { SwizAuthClient } from '@swizauth/js';
+            <pre><code>import { TSAuthClient } from '@tsauth/js';
 
-const swizAuth = new SwizAuthClient({
+const swizAuth = new TSAuthClient({
   clientId: 'your_client_id',
   domain: 'https://auth.yourdomain.com'
 });</code></pre>
 
             <h3>3. React Integration</h3>
-            <pre><code>import { SwizAuthProvider, SignIn, useAuth } from '@swizauth/js';
+            <pre><code>import { TSAuthProvider, SignIn, useAuth } from '@tsauth/js';
 
 function App() {
   return (
-    &lt;SwizAuthProvider config={{ clientId: 'your_client_id', domain: 'https://auth.yourdomain.com' }}&gt;
+    &lt;TSAuthProvider config={{ clientId: 'your_client_id', domain: 'https://auth.yourdomain.com' }}&gt;
       &lt;AuthenticatedApp /&gt;
-    &lt;/SwizAuthProvider&gt;
+    &lt;/TSAuthProvider&gt;
   );
 }
 
@@ -288,28 +288,28 @@ function AuthenticatedApp() {
 
             <h3>4. Vanilla JavaScript</h3>
             <pre><code>// Include the UMD build
-&lt;script src="https://cdn.jsdelivr.net/npm/@swizauth/js@latest/dist/swizauth.umd.js"&gt;&lt;/script&gt;
-&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@swizauth/js@latest/dist/swizauth.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/@tsauth/js@latest/dist/tsauth.umd.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tsauth/js@latest/dist/tsauth.css"&gt;
 
 &lt;script&gt;
-const client = new SwizAuth.SwizAuthClient({
+const client = new TSAuth.TSAuthClient({
   clientId: 'your_client_id',
   domain: 'https://auth.yourdomain.com'
 });
 
 // Render components
-SwizAuth.renderSignIn('#signin-container');
+TSAuth.renderSignIn('#signin-container');
 &lt;/script&gt;</code></pre>
         </div>
     </div>
 
-    <!-- Include SwizAuth SDK (simulated for demo) -->
+    <!-- Include TSAuth SDK (simulated for demo) -->
     <script>
-        // Mock SwizAuth SDK for demo purposes
-        let swizAuthClient = null;
+        // Mock TSAuth SDK for demo purposes
+        let tsAuthClient = null;
         
-        const SwizAuth = {
-            SwizAuthClient: class {
+        const TSAuth = {
+            TSAuthClient: class {
                 constructor(config) {
                     this.config = config;
                     this.isAuthenticated = false;
@@ -351,22 +351,22 @@ SwizAuth.renderSignIn('#signin-container');
             renderSignIn(selector, options = {}) {
                 const container = document.querySelector(selector);
                 container.innerHTML = `
-                    <div class="swizauth-container">
-                        <div class="swizauth-card">
-                            <div class="swizauth-header">
-                                <h1 class="swizauth-title">Sign in to your account</h1>
-                                <p class="swizauth-subtitle">Welcome back! Please enter your details.</p>
+                    <div class="tsauth-container">
+                        <div class="tsauth-card">
+                            <div class="tsauth-header">
+                                <h1 class="tsauth-title">Sign in to your account</h1>
+                                <p class="tsauth-subtitle">Welcome back! Please enter your details.</p>
                             </div>
-                            <form class="swizauth-form" onsubmit="handleFormSignIn(event, '${selector}')">
-                                <div class="swizauth-field">
-                                    <label class="swizauth-label">Email</label>
-                                    <input type="email" class="swizauth-input" name="email" required>
+                            <form class="tsauth-form" onsubmit="handleFormSignIn(event, '${selector}')">
+                                <div class="tsauth-field">
+                                    <label class="tsauth-label">Email</label>
+                                    <input type="email" class="tsauth-input" name="email" required>
                                 </div>
-                                <div class="swizauth-field">
-                                    <label class="swizauth-label">Password</label>
-                                    <input type="password" class="swizauth-input" name="password" required>
+                                <div class="tsauth-field">
+                                    <label class="tsauth-label">Password</label>
+                                    <input type="password" class="tsauth-input" name="password" required>
                                 </div>
-                                <button type="submit" class="swizauth-button swizauth-button-primary">
+                                <button type="submit" class="tsauth-button tsauth-button-primary">
                                     Sign in
                                 </button>
                             </form>
@@ -375,28 +375,28 @@ SwizAuth.renderSignIn('#signin-container');
                 `;
                 
                 // Store options for form handler
-                container._swizAuthOptions = options;
+                container._tsAuthOptions = options;
             },
             
             renderSignUp(selector, options = {}) {
                 const container = document.querySelector(selector);
                 container.innerHTML = `
-                    <div class="swizauth-container">
-                        <div class="swizauth-card">
-                            <div class="swizauth-header">
-                                <h1 class="swizauth-title">Create your account</h1>
-                                <p class="swizauth-subtitle">Get started with your free account today.</p>
+                    <div class="tsauth-container">
+                        <div class="tsauth-card">
+                            <div class="tsauth-header">
+                                <h1 class="tsauth-title">Create your account</h1>
+                                <p class="tsauth-subtitle">Get started with your free account today.</p>
                             </div>
-                            <form class="swizauth-form">
-                                <div class="swizauth-field">
-                                    <label class="swizauth-label">Email</label>
-                                    <input type="email" class="swizauth-input" required>
+                            <form class="tsauth-form">
+                                <div class="tsauth-field">
+                                    <label class="tsauth-label">Email</label>
+                                    <input type="email" class="tsauth-input" required>
                                 </div>
-                                <div class="swizauth-field">
-                                    <label class="swizauth-label">Password</label>
-                                    <input type="password" class="swizauth-input" required>
+                                <div class="tsauth-field">
+                                    <label class="tsauth-label">Password</label>
+                                    <input type="password" class="tsauth-input" required>
                                 </div>
-                                <button type="submit" class="swizauth-button swizauth-button-primary">
+                                <button type="submit" class="tsauth-button tsauth-button-primary">
                                     Create account
                                 </button>
                             </form>
@@ -407,33 +407,33 @@ SwizAuth.renderSignIn('#signin-container');
             
             renderUserProfile(selector, options = {}) {
                 const container = document.querySelector(selector);
-                if (!swizAuthClient?.isSignedIn()) {
-                    container.innerHTML = '<div class="swizauth-error">Please sign in to view your profile.</div>';
+                if (!tsAuthClient?.isSignedIn()) {
+                    container.innerHTML = '<div class="tsauth-error">Please sign in to view your profile.</div>';
                     return;
                 }
                 
-                const user = swizAuthClient.getUser();
+                const user = tsAuthClient.getUser();
                 container.innerHTML = `
-                    <div class="swizauth-container">
-                        <div class="swizauth-card">
-                            <div class="swizauth-header">
-                                <h1 class="swizauth-title">Profile</h1>
-                                <p class="swizauth-subtitle">Manage your account information</p>
+                    <div class="tsauth-container">
+                        <div class="tsauth-card">
+                            <div class="tsauth-header">
+                                <h1 class="tsauth-title">Profile</h1>
+                                <p class="tsauth-subtitle">Manage your account information</p>
                             </div>
-                            <div class="swizauth-profile-view">
-                                <div class="swizauth-profile-avatar">
-                                    <div class="swizauth-avatar-placeholder">
+                            <div class="tsauth-profile-view">
+                                <div class="tsauth-profile-avatar">
+                                    <div class="tsauth-avatar-placeholder">
                                         ${user?.firstName?.[0]?.toUpperCase() || 'U'}
                                     </div>
                                 </div>
-                                <div class="swizauth-profile-info">
-                                    <div class="swizauth-field-display">
-                                        <label class="swizauth-label">Full Name</label>
-                                        <div class="swizauth-value">${user?.firstName || ''} ${user?.lastName || ''}</div>
+                                <div class="tsauth-profile-info">
+                                    <div class="tsauth-field-display">
+                                        <label class="tsauth-label">Full Name</label>
+                                        <div class="tsauth-value">${user?.firstName || ''} ${user?.lastName || ''}</div>
                                     </div>
-                                    <div class="swizauth-field-display">
-                                        <label class="swizauth-label">Email</label>
-                                        <div class="swizauth-value">${user?.email || ''}</div>
+                                    <div class="tsauth-field-display">
+                                        <label class="tsauth-label">Email</label>
+                                        <div class="tsauth-value">${user?.email || ''}</div>
                                     </div>
                                 </div>
                             </div>
@@ -445,16 +445,16 @@ SwizAuth.renderSignIn('#signin-container');
             renderOrganizationSwitcher(selector, options = {}) {
                 const container = document.querySelector(selector);
                 container.innerHTML = `
-                    <div class="swizauth-org-switcher">
-                        <button class="swizauth-org-trigger">
-                            <div class="swizauth-org-info">
-                                <div class="swizauth-org-avatar">A</div>
-                                <div class="swizauth-org-details">
-                                    <div class="swizauth-org-name">Acme Corp</div>
-                                    <div class="swizauth-org-plan">business</div>
+                    <div class="tsauth-org-switcher">
+                        <button class="tsauth-org-trigger">
+                            <div class="tsauth-org-info">
+                                <div class="tsauth-org-avatar">A</div>
+                                <div class="tsauth-org-details">
+                                    <div class="tsauth-org-name">Acme Corp</div>
+                                    <div class="tsauth-org-plan">business</div>
                                 </div>
                             </div>
-                            <div class="swizauth-chevron swizauth-chevron-down">▼</div>
+                            <div class="tsauth-chevron tsauth-chevron-down">▼</div>
                         </button>
                     </div>
                 `;
@@ -466,7 +466,7 @@ SwizAuth.renderSignIn('#signin-container');
             const clientId = document.getElementById('clientId').value;
             const domain = document.getElementById('domain').value;
             
-            swizAuthClient = new SwizAuth.SwizAuthClient({
+            tsAuthClient = new TSAuth.TSAuthClient({
                 clientId,
                 domain
             });
@@ -488,16 +488,16 @@ SwizAuth.renderSignIn('#signin-container');
             setTimeout(() => {
                 switch(type) {
                     case 'signin':
-                        SwizAuth.renderSignIn('#signin-widget');
+                        TSAuth.renderSignIn('#signin-widget');
                         break;
                     case 'signup':
-                        SwizAuth.renderSignUp('#signup-widget');
+                        TSAuth.renderSignUp('#signup-widget');
                         break;
                     case 'profile':
-                        SwizAuth.renderUserProfile('#profile-widget');
+                        TSAuth.renderUserProfile('#profile-widget');
                         break;
                     case 'org-switcher':
-                        SwizAuth.renderOrganizationSwitcher('#org-switcher-widget');
+                        TSAuth.renderOrganizationSwitcher('#org-switcher-widget');
                         break;
                 }
             }, 100);
@@ -510,10 +510,10 @@ SwizAuth.renderSignIn('#signin-container');
             const password = form.password.value;
             
             try {
-                if (swizAuthClient) {
-                    await swizAuthClient.signIn({ email, password });
+                if (tsAuthClient) {
+                    await tsAuthClient.signIn({ email, password });
                     const container = document.querySelector(selector);
-                    const options = container._swizAuthOptions || {};
+                    const options = container._tsAuthOptions || {};
                     if (options.onSignIn) options.onSignIn();
                     
                     container.innerHTML = '<div class="status success">Signed in successfully!</div>';
@@ -525,13 +525,13 @@ SwizAuth.renderSignIn('#signin-container');
         }
         
         function checkAuthStatus() {
-            if (!swizAuthClient) {
+            if (!tsAuthClient) {
                 document.getElementById('auth-status').innerHTML = 
                     '<div class="status error">Client not initialized</div>';
                 return;
             }
             
-            const isSignedIn = swizAuthClient.isSignedIn();
+            const isSignedIn = tsAuthClient.isSignedIn();
             document.getElementById('auth-status').innerHTML = 
                 `<div class="status ${isSignedIn ? 'success' : 'error'}">
                     Authenticated: ${isSignedIn}
@@ -542,14 +542,14 @@ SwizAuth.renderSignIn('#signin-container');
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
-            if (!swizAuthClient) {
+            if (!tsAuthClient) {
                 document.getElementById('signin-result').innerHTML = 
                     '<div class="status error">Client not initialized</div>';
                 return;
             }
             
             try {
-                const result = await swizAuthClient.signIn({ email, password });
+                const result = await tsAuthClient.signIn({ email, password });
                 document.getElementById('signin-result').innerHTML = 
                     '<div class="status success">Signed in successfully!</div>';
             } catch (error) {
@@ -559,26 +559,26 @@ SwizAuth.renderSignIn('#signin-container');
         }
         
         function getCurrentUser() {
-            if (!swizAuthClient) {
+            if (!tsAuthClient) {
                 document.getElementById('user-info').innerHTML = 
                     '<div class="status error">Client not initialized</div>';
                 return;
             }
             
-            const user = swizAuthClient.getUser();
+            const user = tsAuthClient.getUser();
             document.getElementById('user-info').innerHTML = 
                 `<pre>${JSON.stringify(user, null, 2)}</pre>`;
         }
         
         async function signOut() {
-            if (!swizAuthClient) {
+            if (!tsAuthClient) {
                 document.getElementById('signout-result').innerHTML = 
                     '<div class="status error">Client not initialized</div>';
                 return;
             }
             
             try {
-                await swizAuthClient.signOut();
+                await tsAuthClient.signOut();
                 document.getElementById('signout-result').innerHTML = 
                     '<div class="status success">Signed out successfully!</div>';
             } catch (error) {

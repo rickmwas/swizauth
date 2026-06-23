@@ -47,6 +47,19 @@ type Permission struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+// Organization represents the public.organizations database entity
+type Organization struct {
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	Slug      string     `json:"slug"`
+	LogoURL   *string    `json:"logo_url,omitempty"`
+	Status    string     `json:"status"`
+	Plan      string     `json:"plan"`
+	OwnerID   *uuid.UUID `json:"owner_id,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
 // RegisterRequest defines the input required to sign up a new user
 type RegisterRequest struct {
 	OrganizationID string `json:"organization_id" binding:"required,uuid"`

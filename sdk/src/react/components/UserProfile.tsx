@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { useAuth } from '../SwizAuthProvider';
+import { useAuth } from '../TSAUTHProvider';
 
 export interface UserProfileProps {
   onUpdate?: () => void;
@@ -57,15 +57,15 @@ export function UserProfile({
   };
 
   const styles = {
-    '--swizauth-primary': appearance.primaryColor || '#6366f1',
-    '--swizauth-background': appearance.backgroundColor || '#ffffff',
+    '--tsauth-primary': appearance.primaryColor || '#6366f1',
+    '--tsauth-background': appearance.backgroundColor || '#ffffff',
   } as React.CSSProperties;
 
   if (!isLoaded) {
     return (
-      <div className={`swizauth-container ${className}`} style={styles}>
-        <div className="swizauth-loading">
-          <div className="swizauth-spinner"></div>
+      <div className={`TSAUTH-container ${className}`} style={styles}>
+        <div className="TSAUTH-loading">
+          <div className="TSAUTH-spinner"></div>
         </div>
       </div>
     );
@@ -73,36 +73,36 @@ export function UserProfile({
 
   if (!user) {
     return (
-      <div className={`swizauth-container ${className}`} style={styles}>
-        <div className="swizauth-error">Please sign in to view your profile.</div>
+      <div className={`TSAUTH-container ${className}`} style={styles}>
+        <div className="TSAUTH-error">Please sign in to view your profile.</div>
       </div>
     );
   }
 
   return (
-    <div className={`swizauth-container ${className}`} style={styles}>
-      <div className="swizauth-card">
-        <div className="swizauth-header">
-          <h1 className="swizauth-title">Profile</h1>
-          <p className="swizauth-subtitle">Manage your account information</p>
+    <div className={`TSAUTH-container ${className}`} style={styles}>
+      <div className="TSAUTH-card">
+        <div className="TSAUTH-header">
+          <h1 className="TSAUTH-title">Profile</h1>
+          <p className="TSAUTH-subtitle">Manage your account information</p>
         </div>
 
         {!isEditing ? (
-          <div className="swizauth-profile-view">
-            <div className="swizauth-profile-avatar">
+          <div className="TSAUTH-profile-view">
+            <div className="TSAUTH-profile-avatar">
               {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt="Avatar" className="swizauth-avatar" />
+                <img src={user.avatarUrl} alt="Avatar" className="TSAUTH-avatar" />
               ) : (
-                <div className="swizauth-avatar-placeholder">
+                <div className="TSAUTH-avatar-placeholder">
                   {user.firstName?.[0]?.toUpperCase() || user.email[0]?.toUpperCase()}
                 </div>
               )}
             </div>
 
-            <div className="swizauth-profile-info">
-              <div className="swizauth-field-display">
-                <label className="swizauth-label">Full Name</label>
-                <div className="swizauth-value">
+            <div className="TSAUTH-profile-info">
+              <div className="TSAUTH-field-display">
+                <label className="TSAUTH-label">Full Name</label>
+                <div className="TSAUTH-value">
                   {user.firstName || user.lastName 
                     ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
                     : 'Not provided'
@@ -110,26 +110,26 @@ export function UserProfile({
                 </div>
               </div>
 
-              <div className="swizauth-field-display">
-                <label className="swizauth-label">Email</label>
-                <div className="swizauth-value">
+              <div className="TSAUTH-field-display">
+                <label className="TSAUTH-label">Email</label>
+                <div className="TSAUTH-value">
                   {user.email}
                   {user.emailVerified && (
-                    <span className="swizauth-badge swizauth-badge-success">Verified</span>
+                    <span className="TSAUTH-badge TSAUTH-badge-success">Verified</span>
                   )}
                 </div>
               </div>
 
-              <div className="swizauth-field-display">
-                <label className="swizauth-label">Username</label>
-                <div className="swizauth-value">{user.username}</div>
+              <div className="TSAUTH-field-display">
+                <label className="TSAUTH-label">Username</label>
+                <div className="TSAUTH-value">{user.username}</div>
               </div>
 
-              <div className="swizauth-field-display">
-                <label className="swizauth-label">Roles</label>
-                <div className="swizauth-badges">
+              <div className="TSAUTH-field-display">
+                <label className="TSAUTH-label">Roles</label>
+                <div className="TSAUTH-badges">
                   {user.roles.map((role) => (
-                    <span key={role} className="swizauth-badge">
+                    <span key={role} className="TSAUTH-badge">
                       {role}
                     </span>
                   ))}
@@ -147,77 +147,77 @@ export function UserProfile({
                   username: user.username,
                 });
               }}
-              className="swizauth-button swizauth-button-secondary"
+              className="TSAUTH-button TSAUTH-button-secondary"
             >
               Edit Profile
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="swizauth-form">
-            <div className="swizauth-field-group">
-              <div className="swizauth-field swizauth-field-half">
-                <label className="swizauth-label">First Name</label>
+          <form onSubmit={handleSubmit} className="TSAUTH-form">
+            <div className="TSAUTH-field-group">
+              <div className="TSAUTH-field TSAUTH-field-half">
+                <label className="TSAUTH-label">First Name</label>
                 <input
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="swizauth-input"
+                  className="TSAUTH-input"
                   disabled={isLoading}
                 />
               </div>
-              <div className="swizauth-field swizauth-field-half">
-                <label className="swizauth-label">Last Name</label>
+              <div className="TSAUTH-field TSAUTH-field-half">
+                <label className="TSAUTH-label">Last Name</label>
                 <input
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="swizauth-input"
+                  className="TSAUTH-input"
                   disabled={isLoading}
                 />
               </div>
             </div>
 
-            <div className="swizauth-field">
-              <label className="swizauth-label">Email</label>
+            <div className="TSAUTH-field">
+              <label className="TSAUTH-label">Email</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="swizauth-input"
+                className="TSAUTH-input"
                 required
                 disabled={isLoading}
               />
             </div>
 
-            <div className="swizauth-field">
-              <label className="swizauth-label">Username</label>
+            <div className="TSAUTH-field">
+              <label className="TSAUTH-label">Username</label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="swizauth-input"
+                className="TSAUTH-input"
                 required
                 disabled={isLoading}
               />
             </div>
 
-            <div className="swizauth-button-group">
+            <div className="TSAUTH-button-group">
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="swizauth-button swizauth-button-secondary"
+                className="TSAUTH-button TSAUTH-button-secondary"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="swizauth-button swizauth-button-primary"
+                className="TSAUTH-button TSAUTH-button-primary"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <div className="swizauth-spinner swizauth-spinner-sm"></div>
+                    <div className="TSAUTH-spinner TSAUTH-spinner-sm"></div>
                     Saving...
                   </>
                 ) : (

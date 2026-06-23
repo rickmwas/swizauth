@@ -1,0 +1,18 @@
+$f = 'c:\Users\rickm\OneDrive\Desktop\swizauth\sdk\examples\vanilla-js\index.html'
+$c = [System.IO.File]::ReadAllText($f)
+$c = $c.Replace('@swizauth/', '@tsauth/')
+$c = $c.Replace('SwizAuth SDK', 'TSAuth SDK')
+$c = $c.Replace('SwizAuth.SwizAuthClient', 'TSAuth.TSAuthClient')
+$c = $c.Replace('SwizAuth.render', 'TSAuth.render')
+$c = $c.Replace('SwizAuthClient', 'TSAuthClient')
+$c = $c.Replace('SwizAuthProvider', 'TSAuthProvider')
+$c = $c.Replace('_swizAuthOptions', '_tsAuthOptions')
+$c = $c.Replace('swizAuthClient', 'tsAuthClient')
+$c = $c.Replace('swizauth-', 'tsauth-')
+$c = $c.Replace('SwizAuth CSS', 'TSAuth CSS')
+$c = $c.Replace('swizauth.css', 'tsauth.css')
+$c = $c.Replace('swizauth.umd.js', 'tsauth.umd.js')
+$c = $c.Replace('SwizAuth', 'TSAuth')
+$c = $c.Replace('swizauth', 'tsauth')
+[System.IO.File]::WriteAllText($f, $c)
+Write-Host 'HTML file updated'

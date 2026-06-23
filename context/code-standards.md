@@ -1,6 +1,6 @@
-# Code Standards and Conventions: SWIZAUTH
+# Code Standards and Conventions: TSAUTH
 
-This document details the code style, TypeScript rules, Go conventions, logging parameters, and standard API responses for all services in SWIZAUTH.
+This document details the code style, TypeScript rules, Go conventions, logging parameters, and standard API responses for all services in TSAUTH.
 
 ---
 

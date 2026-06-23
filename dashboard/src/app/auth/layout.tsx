@@ -69,7 +69,7 @@ export default function AuthLayout({
 
         {/* Footer */}
         <div className="relative z-10 text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} SwizAuth. All rights reserved.
+          &copy; {new Date().getFullYear()} TSAUTH. All rights reserved.
         </div>
       </div>
 

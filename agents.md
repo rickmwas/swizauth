@@ -1,22 +1,22 @@
-# SWIZAUTH AI Instruction Manual (`agents.md`)
+# TSAUTH AI Instruction Manual (`agents.md`)
 
 This manual dictates the execution rules, document reading order, and tool usage for any AI coding assistant interacting with this workspace.
 
 ---
 
 ## 1. Reading Context Files
-Before executing any file updates, writing new code, or running build tasks, you must read the following 9 context files in the precise order specified below to ensure alignment with SwizAuth rules.
+Before executing any file updates, writing new code, or running build tasks, you must read the following 9 context files in the precise order specified below to ensure alignment with TSAUTH rules.
 
 ### Enforced Reading Order
-1. **[project-overview.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/project-overview.md):** Understand the goals, user types, and MVP bounds of SwizAuth.
-2. **[architecture.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/architecture.md):** Map out services (Go, NestJS, Next.js), ports, database schemas, and multi-tenant structures.
-3. **[code-standards.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/code-standards.md):** Learn TS requirements, Go conventions, standard error shapes, and logging structures.
-4. **[library-docs.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/library-docs.md):** Understand database query models, cache prefixes, and packages structure.
-5. **[ui-tokens.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/ui-tokens.md):** Enforce visual constants, fonts, spacing, HSL values, and Tailwind parameters.
-6. **[ui-rules.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/ui-rules.md):** Ensure form disabling on load, pagination, action confirmation dialogues, and interactive state rules.
-7. **[ui-registry.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/ui-registry.md):** Inspect previously created UI components to reuse instead of recreating.
-8. **[progress-tracker.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/progress-tracker.md):** Check what has been built and what feature is current.
-9. **[build-plan.md](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/context/build-plan.md):** Review the sequence of tasks for the active phase.
+1. **[project-overview.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/project-overview.md):** Understand the goals, user types, and MVP bounds of TSAUTH.
+2. **[architecture.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/architecture.md):** Map out services (Go, NestJS, Next.js), ports, database schemas, and multi-tenant structures.
+3. **[code-standards.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/code-standards.md):** Learn TS requirements, Go conventions, standard error shapes, and logging structures.
+4. **[library-docs.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/library-docs.md):** Understand database query models, cache prefixes, and packages structure.
+5. **[ui-tokens.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/ui-tokens.md):** Enforce visual constants, fonts, spacing, HSL values, and Tailwind parameters.
+6. **[ui-rules.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/ui-rules.md):** Ensure form disabling on load, pagination, action confirmation dialogues, and interactive state rules.
+7. **[ui-registry.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/ui-registry.md):** Inspect previously created UI components to reuse instead of recreating.
+8. **[progress-tracker.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/progress-tracker.md):** Check what has been built and what feature is current.
+9. **[build-plan.md](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/context/build-plan.md):** Review the sequence of tasks for the active phase.
 
 ---
 

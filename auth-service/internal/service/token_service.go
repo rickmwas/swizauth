@@ -12,12 +12,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/rickmwas/swizauth/auth-service/internal/domain"
+	"github.com/rickmwas/tsauth/auth-service/internal/domain"
 )
 
 // TokenService manages the lifecycle of access tokens and refresh tokens
 type TokenService interface {
-	GenerateAccessToken(user *domain.User, sessionID uuid.UUID, roles, permissions []string) (string, error)
+	GenerateAccessToken(user *domain.User, plan string, sessionID uuid.UUID, roles, permissions []string) (string, error)
 	VerifyAccessToken(tokenStr string) (jwt.MapClaims, error)
 	GenerateRefreshToken() (string, error)
 	GenerateMfaToken(userID, orgID uuid.UUID) (string, error)
@@ -60,12 +60,13 @@ func NewTokenService(privateKeyPath, publicKeyPath string, expiryMin int) (Token
 }
 
 // GenerateAccessToken builds and signs an RS256 Access Token containing standard and user claim elements
-func (s *tokenService) GenerateAccessToken(user *domain.User, sessionID uuid.UUID, roles, permissions []string) (string, error) {
+func (s *tokenService) GenerateAccessToken(user *domain.User, plan string, sessionID uuid.UUID, roles, permissions []string) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
 		"sub":         user.ID.String(),
 		"org":         user.OrganizationID.String(),
 		"email":       user.Email,
+		"plan":        plan,
 		"roles":       roles,
 		"permissions": permissions,
 		"session_id":  sessionID.String(),

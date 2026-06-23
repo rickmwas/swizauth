@@ -1,12 +1,12 @@
-# SwizAuth Fly.io Deployment Guide
+# TSAUTH Fly.io Deployment Guide
 
-Deploy SwizAuth to Fly.io with automatic scaling, global edge deployment, and managed databases.
+Deploy TSAUTH to Fly.io with automatic scaling, global edge deployment, and managed databases.
 
 ## 🚀 Quick Deployment (5 Minutes)
 
 ### Prerequisites
 - Fly.io account (free tier available)
-- Git repository with SwizAuth code
+- Git repository with TSAUTH code
 
 ### One-Command Deployment
 
@@ -54,17 +54,17 @@ fly auth login
 ```bash
 # Create auth service
 cd auth-service
-fly apps create swizauth-auth
+fly apps create tsauth-auth
 cd ..
 
 # Create admin service  
 cd admin-service
-fly apps create swizauth-admin
+fly apps create tsauth-admin
 cd ..
 
 # Create dashboard
 cd dashboard  
-fly apps create swizauth-dashboard
+fly apps create tsauth-dashboard
 cd ..
 ```
 
@@ -72,17 +72,17 @@ cd ..
 ```bash
 # Create PostgreSQL database
 cd auth-service
-fly postgres create swizauth-db --region iad --initial-cluster-size 1
+fly postgres create tsauth-db --region iad --initial-cluster-size 1
 
 # Attach to both services
-fly postgres attach swizauth-db --app swizauth-auth
+fly postgres attach tsauth-db --app tsauth-auth
 cd ../admin-service
-fly postgres attach swizauth-db --app swizauth-admin
+fly postgres attach tsauth-db --app tsauth-admin
 cd ..
 
 # Create Redis
 cd auth-service
-fly redis create --name swizauth-redis --region iad
+fly redis create --name tsauth-redis --region iad
 cd ..
 ```
 
@@ -132,9 +132,9 @@ cd ..
 ### Step 6: Configure Service URLs
 ```bash
 # Get your app URLs
-AUTH_URL=$(fly apps list | grep swizauth-auth | awk '{print $2}')
-ADMIN_URL=$(fly apps list | grep swizauth-admin | awk '{print $2}')  
-DASHBOARD_URL=$(fly apps list | grep swizauth-dashboard | awk '{print $2}')
+AUTH_URL=$(fly apps list | grep tsauth-auth | awk '{print $2}')
+ADMIN_URL=$(fly apps list | grep tsauth-admin | awk '{print $2}')  
+DASHBOARD_URL=$(fly apps list | grep tsauth-dashboard | awk '{print $2}')
 
 # Set service URLs
 cd dashboard
@@ -159,11 +159,11 @@ cd ..
 ### Initialize Database with Seed Data
 ```bash
 # Connect to PostgreSQL
-fly postgres connect -a swizauth-db
+fly postgres connect -a tsauth-db
 
 # In the PostgreSQL prompt, create the database structure
-CREATE DATABASE swizauth;
-\c swizauth;
+CREATE DATABASE TSAUTH;
+\c TSAUTH;
 
 # Copy and paste the contents of migrations/seed.sql
 # Or upload the file and run:
@@ -173,10 +173,10 @@ CREATE DATABASE swizauth;
 ### Alternative: Use Database Proxy
 ```bash
 # Create a secure tunnel to your database
-fly proxy 5432 -a swizauth-db
+fly proxy 5432 -a tsauth-db
 
 # In another terminal, connect with local tools
-psql postgres://postgres:password@localhost:5432/swizauth
+psql postgres://postgres:password@localhost:5432/TSAUTH
 ```
 
 ---
@@ -238,30 +238,30 @@ fly secrets set CORS_ALLOWED_ORIGINS="https://yourdomain.com,https://www.yourdom
 fly apps list
 
 # Check specific app status  
-fly status -a swizauth-auth
+fly status -a tsauth-auth
 
 # View logs
-fly logs -a swizauth-auth -f
+fly logs -a tsauth-auth -f
 ```
 
 ### Health Monitoring
 ```bash
 # Check health endpoints
-curl https://swizauth-auth.fly.dev/health
-curl https://swizauth-admin.fly.dev/health  
-curl https://swizauth-dashboard.fly.dev/api/health
+curl https://tsauth-auth.fly.dev/health
+curl https://tsauth-admin.fly.dev/health  
+curl https://tsauth-dashboard.fly.dev/api/health
 ```
 
 ### Database Management
 ```bash
 # Database status
-fly postgres db list -a swizauth-db
+fly postgres db list -a tsauth-db
 
 # Create backup
-fly postgres backup -a swizauth-db
+fly postgres backup -a tsauth-db
 
 # View Redis status
-fly redis status swizauth-redis
+fly redis status tsauth-redis
 ```
 
 ---
@@ -281,10 +281,10 @@ fly deploy
 ### Rollback Deployment  
 ```bash
 # View deployment history
-fly releases -a swizauth-auth
+fly releases -a tsauth-auth
 
 # Rollback to previous version
-fly releases rollback -a swizauth-auth
+fly releases rollback -a tsauth-auth
 ```
 
 ### Blue-Green Deployment
@@ -302,7 +302,7 @@ fly deploy --strategy=bluegreen
 **1. App Creation Fails**
 ```bash
 # App name might be taken, use unique prefix
-fly apps create mycompany-swizauth-auth
+fly apps create mycompany-tsauth-auth
 ```
 
 **2. Database Connection Issues**
@@ -311,14 +311,14 @@ fly apps create mycompany-swizauth-auth
 fly postgres attach --help
 
 # Verify connection string
-fly secrets list -a swizauth-auth | grep DATABASE
+fly secrets list -a tsauth-auth | grep DATABASE
 ```
 
 **3. Service Communication Issues**
 ```bash
 # Check internal connectivity
-fly ssh console -a swizauth-auth
-# Then: curl http://swizauth-admin.internal:3001/health
+fly ssh console -a tsauth-auth
+# Then: curl http://tsauth-admin.internal:3001/health
 ```
 
 **4. CORS Errors**
@@ -330,13 +330,13 @@ fly secrets set CORS_ALLOWED_ORIGINS="https://your-actual-domain.com"
 ### Debug Commands
 ```bash
 # SSH into running app
-fly ssh console -a swizauth-auth
+fly ssh console -a tsauth-auth
 
 # View real-time logs
-fly logs -a swizauth-auth -f
+fly logs -a tsauth-auth -f
 
 # Check machine status
-fly machine list -a swizauth-auth
+fly machine list -a tsauth-auth
 ```
 
 ---
@@ -347,14 +347,14 @@ After deployment, verify:
 
 ✅ **All services respond to health checks**
 ```bash
-curl https://swizauth-auth.fly.dev/health
-curl https://swizauth-admin.fly.dev/health
-curl https://swizauth-dashboard.fly.dev/api/health
+curl https://tsauth-auth.fly.dev/health
+curl https://tsauth-admin.fly.dev/health
+curl https://tsauth-dashboard.fly.dev/api/health
 ```
 
 ✅ **Database is accessible and seeded**
 ```bash
-fly postgres connect -a swizauth-db
+fly postgres connect -a tsauth-db
 # Check: SELECT COUNT(*) FROM public.organizations;
 ```
 
@@ -373,7 +373,7 @@ fly postgres connect -a swizauth-db
 
 ## 🚀 You're Live!
 
-Your SwizAuth system is now running on Fly.io with:
+Your TSAUTH system is now running on Fly.io with:
 
 ✅ **Global edge deployment** - Low latency worldwide  
 ✅ **Auto-scaling** - Scales to zero when idle  
@@ -381,7 +381,7 @@ Your SwizAuth system is now running on Fly.io with:
 ✅ **Automatic HTTPS** - SSL certificates managed  
 ✅ **Zero-downtime deploys** - Blue-green deployment ready  
 
-**Dashboard:** `https://swizauth-dashboard.fly.dev`  
-**Login:** `admin@swizfusion.com` / `Password123!`
+**Dashboard:** `https://tsauth-dashboard.fly.dev`  
+**Login:** `admin@terrasept.com` / `Password123!`
 
 Enjoy your production-ready authentication system! 🎉

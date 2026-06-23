@@ -1,13 +1,13 @@
-# SwizAuth Deployment Guide
+# TSAUTH Deployment Guide
 
-This guide covers deploying SwizAuth to production using various cloud providers.
+This guide covers deploying TSAUTH to production using various cloud providers.
 
 ## 🚀 Quick Start - Railway.app (Recommended)
 
 Railway.app provides the easiest deployment path with built-in PostgreSQL and Redis.
 
 ### Prerequisites
-- GitHub repository with SwizAuth code
+- GitHub repository with TSAUTH code
 - Railway.app account (free tier available)
 
 ### Steps
@@ -88,10 +88,10 @@ Railway.app provides the easiest deployment path with built-in PostgreSQL and Re
 4. **Initialize Database**
    ```bash
    # Copy seed data to container
-   docker cp migrations/seed.sql swizauth-postgres-prod:/tmp/
+   docker cp migrations/seed.sql tsauth-postgres-prod:/tmp/
    
    # Run seed script
-   docker exec -it swizauth-postgres-prod psql -U postgres -d swizauth -f /tmp/seed.sql
+   docker exec -it tsauth-postgres-prod psql -U postgres -d TSAUTH -f /tmp/seed.sql
    ```
 
 ## 🌐 Other Cloud Providers
@@ -117,16 +117,16 @@ Railway.app provides the easiest deployment path with built-in PostgreSQL and Re
 
 2. **Create Apps**
    ```bash
-   flyctl apps create swizauth-auth
-   flyctl apps create swizauth-admin  
-   flyctl apps create swizauth-dashboard
+   flyctl apps create tsauth-auth
+   flyctl apps create tsauth-admin  
+   flyctl apps create tsauth-dashboard
    ```
 
 3. **Deploy**
    ```bash
-   flyctl deploy --app swizauth-auth --dockerfile auth-service/Dockerfile
-   flyctl deploy --app swizauth-admin --dockerfile admin-service/Dockerfile
-   flyctl deploy --app swizauth-dashboard --dockerfile dashboard/Dockerfile
+   flyctl deploy --app tsauth-auth --dockerfile auth-service/Dockerfile
+   flyctl deploy --app tsauth-admin --dockerfile admin-service/Dockerfile
+   flyctl deploy --app tsauth-dashboard --dockerfile dashboard/Dockerfile
    ```
 
 ### Google Cloud Platform
@@ -134,17 +134,17 @@ Railway.app provides the easiest deployment path with built-in PostgreSQL and Re
 1. **Build Images**
    ```bash
    # Build and push to Container Registry
-   gcloud builds submit --tag gcr.io/PROJECT-ID/swizauth-auth auth-service/
-   gcloud builds submit --tag gcr.io/PROJECT-ID/swizauth-admin admin-service/
-   gcloud builds submit --tag gcr.io/PROJECT-ID/swizauth-dashboard dashboard/
+   gcloud builds submit --tag gcr.io/PROJECT-ID/tsauth-auth auth-service/
+   gcloud builds submit --tag gcr.io/PROJECT-ID/tsauth-admin admin-service/
+   gcloud builds submit --tag gcr.io/PROJECT-ID/tsauth-dashboard dashboard/
    ```
 
 2. **Deploy to Cloud Run**
    ```bash
    # Deploy services
-   gcloud run deploy auth-service --image gcr.io/PROJECT-ID/swizauth-auth --platform managed
-   gcloud run deploy admin-service --image gcr.io/PROJECT-ID/swizauth-admin --platform managed
-   gcloud run deploy dashboard --image gcr.io/PROJECT-ID/swizauth-dashboard --platform managed
+   gcloud run deploy auth-service --image gcr.io/PROJECT-ID/tsauth-auth --platform managed
+   gcloud run deploy admin-service --image gcr.io/PROJECT-ID/tsauth-admin --platform managed
+   gcloud run deploy dashboard --image gcr.io/PROJECT-ID/tsauth-dashboard --platform managed
    ```
 
 ## 🔒 Security Checklist

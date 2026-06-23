@@ -1,4 +1,4 @@
-# UI Rules and Guidelines: SWIZAUTH
+# UI Rules and Guidelines: TSAUTH
 
 This document defines user experience standards, form validation rules, table behaviors, and screen transitions based on **Shadcn UI** specifications.
 
@@ -9,7 +9,7 @@ This document defines user experience standards, form validation rules, table be
 ### Layout & Entry
 - **Screen Layout:** Centered single-column container or Split-screen layout. For split-screen, the left panel features premium gradients and product value propositions, while the right panel handles the clean auth form.
 - **Micro-Animations:** Use subtle slide-up and fade-in states for form panels when mounting.
-- **Brand Consistency:** Display the SwizAuth logo explicitly at the top of each authentication card.
+- **Brand Consistency:** Display the TSAUTH logo explicitly at the top of each authentication card.
 
 ### Input Elements & Feedback
 - **Field Autofocus:** The first input field (e.g., Email or Username) must autofocus on load.

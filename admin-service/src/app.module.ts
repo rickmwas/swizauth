@@ -12,6 +12,7 @@ import { ApplicationsModule } from './applications/applications.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { AuditModule } from './audit/audit.module';
 import { HealthModule } from './health/health.module';
+import { BillingModule } from './billing/billing.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { HealthModule } from './health/health.module';
     ApiKeysModule,
     AuditModule,
     HealthModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

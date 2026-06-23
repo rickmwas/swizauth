@@ -1,6 +1,6 @@
-# Library and Tool Documentation: SWIZAUTH
+# Library and Tool Documentation: TSAUTH
 
-This document explains how to interact with, initialize, and run commands for the core frameworks, UI packages, and databases in the SWIZAUTH workspace.
+This document explains how to interact with, initialize, and run commands for the core frameworks, UI packages, and databases in the TSAUTH workspace.
 
 ---
 

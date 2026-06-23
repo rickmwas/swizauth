@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# SwizAuth Railway.app Deployment Script
+# TSAUTH Railway.app Deployment Script
 set -e
 
-echo "🚀 Starting SwizAuth Railway Deployment..."
+echo "🚀 Starting TSAUTH Railway Deployment..."
 
 # Check if Railway CLI is installed
 if ! command -v railway &> /dev/null; then
@@ -66,7 +66,7 @@ echo "📋 Getting service information..."
 railway status
 
 echo ""
-echo "🎉 SwizAuth deployed to Railway!"
+echo "🎉 TSAUTH deployed to Railway!"
 echo ""
 echo "📌 Next steps:"
 echo "   1. Check Railway dashboard for service URLs"
@@ -76,6 +76,6 @@ echo "      railway connect postgresql"
 echo "      # Then run the contents of migrations/seed.sql"
 echo ""
 echo "🔐 Test Login:"
-echo "   Email:    admin@swizfusion.com"
+echo "   Email:    admin@terrasept.com"
 echo "   Password: Password123!"
 echo ""

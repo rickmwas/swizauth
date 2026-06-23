@@ -108,7 +108,7 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Filters Card */}
-      <div className="bg-card border border-border rounded-xl p-4 shadow-sm shadow-black/5 space-y-4">
+      <div className="card-premium p-4 shadow-sm shadow-black/5 space-y-4">
         <div className="flex items-center space-x-2 text-xs font-semibold text-foreground border-b border-border pb-2.5">
           <Filter className="w-4 h-4 text-primary" />
           <span>Filter Audit History</span>
@@ -203,7 +203,7 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Logs Table Card */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="card-premium !p-0 overflow-hidden">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <span className="text-xs font-semibold text-foreground">Registered Log Audit Trail</span>
           <div className="flex items-center space-x-2 text-xs">
@@ -251,7 +251,7 @@ export default function AuditLogsPage() {
               </tbody>
             </table>
           ) : error ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="card-premium p-12 text-center flex flex-col items-center justify-center space-y-3">
               <AlertCircle className="w-10 h-10 text-destructive" />
               <p className="text-sm font-semibold text-foreground">Failed to load audit logs</p>
               <p className="text-xs text-muted-foreground max-w-sm">{error}</p>
@@ -264,7 +264,7 @@ export default function AuditLogsPage() {
             </div>
           ) : logs.length === 0 ? (
             /* Empty state SVG */
-            <div className="p-16 flex flex-col items-center justify-center text-center space-y-4">
+            <div className="card-premium p-16 flex flex-col items-center justify-center text-center space-y-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent text-accent-foreground">
                 <FileSpreadsheet className="w-6 h-6" />
               </div>

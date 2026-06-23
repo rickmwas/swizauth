@@ -1,4 +1,4 @@
--- Up Migration: Initialize SWIZAUTH schema and tables
+-- Up Migration: Initialize TSAUTH schema and tables
 
 -- 1. Create Custom Schemas
 CREATE SCHEMA IF NOT EXISTS auth;

@@ -1,4 +1,4 @@
-# SwizAuth Production Readiness Checklist
+# TSAUTH Production Readiness Checklist
 
 ## ✅ Infrastructure Ready
 - [x] Dockerfiles created for all 3 services

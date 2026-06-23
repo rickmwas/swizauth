@@ -1,11 +1,11 @@
-# SwizAuth Fly.io Deployment Script (PowerShell)
+# TSAUTH Fly.io Deployment Script (PowerShell)
 param(
     [string]$Region = "iad",
     [switch]$CreateApps,
     [switch]$SetSecrets
 )
 
-Write-Host "[FLY] Starting SwizAuth Fly.io Deployment..." -ForegroundColor Green
+Write-Host "[FLY] Starting TSAUTH Fly.io Deployment..." -ForegroundColor Green
 
 # Check if Fly CLI is installed
 try {
@@ -48,20 +48,20 @@ if ($CreateApps) {
     
     # Create auth service app
     Set-Location auth-service
-    Write-Host "[CREATE] Creating swizauth-auth app..." -ForegroundColor White
-    fly apps create swizauth-auth --org personal
+    Write-Host "[CREATE] Creating tsauth-auth app..." -ForegroundColor White
+    fly apps create tsauth-auth --org personal
     Set-Location ..
     
     # Create admin service app  
     Set-Location admin-service
-    Write-Host "[CREATE] Creating swizauth-admin app..." -ForegroundColor White
-    fly apps create swizauth-admin --org personal
+    Write-Host "[CREATE] Creating tsauth-admin app..." -ForegroundColor White
+    fly apps create tsauth-admin --org personal
     Set-Location ..
     
     # Create dashboard app
     Set-Location dashboard
-    Write-Host "[CREATE] Creating swizauth-dashboard app..." -ForegroundColor White
-    fly apps create swizauth-dashboard --org personal
+    Write-Host "[CREATE] Creating tsauth-dashboard app..." -ForegroundColor White
+    fly apps create tsauth-dashboard --org personal
     Set-Location ..
     
     Write-Host "[OK] All applications created" -ForegroundColor Green
@@ -100,7 +100,7 @@ if ($SetSecrets) {
 Write-Host "[DATABASE] Setting up PostgreSQL..." -ForegroundColor Cyan
 Set-Location auth-service
 try {
-    fly postgres create swizauth-db --region $Region --initial-cluster-size 1
+    fly postgres create tsauth-db --region $Region --initial-cluster-size 1
     Write-Host "[OK] PostgreSQL database created" -ForegroundColor Green
 } catch {
     Write-Host "[WARN] PostgreSQL database may already exist" -ForegroundColor Yellow
@@ -108,19 +108,19 @@ try {
 
 # Attach database to services
 Write-Host "[DATABASE] Attaching database to auth service..." -ForegroundColor White
-fly postgres attach swizauth-db --app swizauth-auth
+fly postgres attach tsauth-db --app tsauth-auth
 Set-Location ..
 
 Set-Location admin-service
 Write-Host "[DATABASE] Attaching database to admin service..." -ForegroundColor White  
-fly postgres attach swizauth-db --app swizauth-admin
+fly postgres attach tsauth-db --app tsauth-admin
 Set-Location ..
 
 # Add Redis
 Write-Host "[REDIS] Setting up Redis..." -ForegroundColor Cyan
 Set-Location auth-service
 try {
-    fly redis create --name swizauth-redis --region $Region
+    fly redis create --name tsauth-redis --region $Region
     Write-Host "[OK] Redis instance created" -ForegroundColor Green
 } catch {
     Write-Host "[WARN] Redis instance may already exist" -ForegroundColor Yellow
@@ -145,9 +145,9 @@ Set-Location ..
 
 # Get app URLs
 Write-Host "[INFO] Getting application URLs..." -ForegroundColor Cyan
-$authUrl = fly apps list | Select-String "swizauth-auth" | ForEach-Object { ($_ -split '\s+')[1] }
-$adminUrl = fly apps list | Select-String "swizauth-admin" | ForEach-Object { ($_ -split '\s+')[1] }  
-$dashboardUrl = fly apps list | Select-String "swizauth-dashboard" | ForEach-Object { ($_ -split '\s+')[1] }
+$authUrl = fly apps list | Select-String "tsauth-auth" | ForEach-Object { ($_ -split '\s+')[1] }
+$adminUrl = fly apps list | Select-String "tsauth-admin" | ForEach-Object { ($_ -split '\s+')[1] }  
+$dashboardUrl = fly apps list | Select-String "tsauth-dashboard" | ForEach-Object { ($_ -split '\s+')[1] }
 
 # Set service URLs as secrets
 Write-Host "[CONFIG] Configuring service URLs..." -ForegroundColor White
@@ -166,7 +166,7 @@ fly secrets set CORS_ALLOWED_ORIGINS="https://$dashboardUrl,https://$adminUrl"
 Set-Location ..
 
 Write-Host ""
-Write-Host "[SUCCESS] SwizAuth deployed to Fly.io!" -ForegroundColor Green
+Write-Host "[SUCCESS] TSAUTH deployed to Fly.io!" -ForegroundColor Green
 Write-Host ""
 Write-Host "[URLS] Application URLs:" -ForegroundColor Cyan
 Write-Host "   • Dashboard:     https://$dashboardUrl" -ForegroundColor White
@@ -175,12 +175,12 @@ Write-Host "   • Auth Service:  https://$authUrl" -ForegroundColor White
 Write-Host ""
 Write-Host "[NEXT] Next steps:" -ForegroundColor Cyan
 Write-Host "   1. Connect to PostgreSQL and run seed data:" -ForegroundColor White
-Write-Host "      fly postgres connect -a swizauth-db" -ForegroundColor Gray
+Write-Host "      fly postgres connect -a tsauth-db" -ForegroundColor Gray
 Write-Host "      # Then run the contents of migrations/seed.sql" -ForegroundColor Gray
 Write-Host "   2. Test authentication flows" -ForegroundColor White
 Write-Host "   3. Configure custom domain (optional)" -ForegroundColor White
 Write-Host ""
 Write-Host "[LOGIN] Test Login:" -ForegroundColor Cyan
-Write-Host "   Email:    admin@swizfusion.com" -ForegroundColor White
+Write-Host "   Email:    admin@terrasept.com" -ForegroundColor White
 Write-Host "   Password: Password123!" -ForegroundColor White
 Write-Host ""

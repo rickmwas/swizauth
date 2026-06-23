@@ -67,7 +67,7 @@ export default function LoginPage() {
               Due to multiple failed login attempts, your account has been temporarily locked for security. Please contact your system administrator or support to restore access.
             </p>
             <a
-              href="mailto:support@swizfusion.com"
+              href="mailto:support@terrasept.com"
               className="inline-block text-xs font-semibold text-primary hover:underline pt-1"
             >
               Contact Support &rarr;

@@ -1,9 +1,9 @@
-# SwizAuth Local Production Deployment Script (PowerShell)
+# TSAUTH Local Production Deployment Script (PowerShell)
 param(
     [switch]$Force
 )
 
-Write-Host "[DEPLOY] Starting SwizAuth Local Production Deployment..." -ForegroundColor Green
+Write-Host "[DEPLOY] Starting TSAUTH Local Production Deployment..." -ForegroundColor Green
 
 # Check if Docker is running
 try {
@@ -100,21 +100,21 @@ foreach ($service in $services) {
 # Initialize database with seed data
 Write-Host "[DATABASE] Initializing database..." -ForegroundColor Cyan
 try {
-    $result = docker exec swizauth-postgres-prod psql -U postgres -d swizauth -c "SELECT COUNT(*) FROM public.organizations;" 2>$null
+    $result = docker exec tsauth-postgres-prod psql -U postgres -d TSAUTH -c "SELECT COUNT(*) FROM public.organizations;" 2>$null
     if ($result -match "\s+0\s+") {
         Write-Host "[SEED] Seeding database..." -ForegroundColor Yellow
-        Get-Content "migrations\seed.sql" | docker exec -i swizauth-postgres-prod psql -U postgres -d swizauth
+        Get-Content "migrations\seed.sql" | docker exec -i tsauth-postgres-prod psql -U postgres -d TSAUTH
         Write-Host "[OK] Database seeded successfully" -ForegroundColor Green
     } else {
         Write-Host "[SKIP] Database already contains data, skipping seed" -ForegroundColor Blue
     }
 } catch {
     Write-Host "[WARN] Could not check database status, attempting to seed..." -ForegroundColor Yellow
-    Get-Content "migrations\seed.sql" | docker exec -i swizauth-postgres-prod psql -U postgres -d swizauth
+    Get-Content "migrations\seed.sql" | docker exec -i tsauth-postgres-prod psql -U postgres -d TSAUTH
 }
 
 Write-Host ""
-Write-Host "[SUCCESS] SwizAuth deployment complete!" -ForegroundColor Green
+Write-Host "[SUCCESS] TSAUTH deployment complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host "[URLS] Service URLs:" -ForegroundColor Cyan
 Write-Host "   • Dashboard:     http://localhost:3000" -ForegroundColor White
@@ -127,6 +127,6 @@ Write-Host "   • Stop services: docker-compose -f docker-compose.prod.yml --en
 Write-Host "   • Restart:       .\scripts\deploy-local.ps1" -ForegroundColor Gray
 Write-Host ""
 Write-Host "[LOGIN] Test Login:" -ForegroundColor Cyan
-Write-Host "   Email:    admin@swizfusion.com" -ForegroundColor White
+Write-Host "   Email:    admin@terrasept.com" -ForegroundColor White
 Write-Host "   Password: Password123!" -ForegroundColor White
 Write-Host ""

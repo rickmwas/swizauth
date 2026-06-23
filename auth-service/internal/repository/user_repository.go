@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/rickmwas/swizauth/auth-service/internal/domain"
+	"github.com/rickmwas/tsauth/auth-service/internal/domain"
 )
 
 // Repository errors

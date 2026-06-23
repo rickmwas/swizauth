@@ -14,6 +14,7 @@ import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Permissions } from '../common/decorators/permissions.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
+import { PlanLimitsGuard } from '../common/guards/plan-limits.guard';
 
 @Controller('applications')
 @UseGuards(AuthGuard, PermissionsGuard)
@@ -21,6 +22,7 @@ export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
 
   @Post()
+  @UseGuards(PlanLimitsGuard)
   @Permissions('applications.create')
   create(
     @GetUser() user: AuthenticatedUser,

@@ -78,7 +78,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     }
 
-    // Structured JSON log output matching swizauth standards
+    // Structured JSON log output matching TSAUTH standards
     const logPayload = {
       timestamp: new Date().toISOString(),
       level: 'ERROR',

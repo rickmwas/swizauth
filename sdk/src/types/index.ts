@@ -1,4 +1,4 @@
-export interface SwizAuthConfig {
+export interface TSAUTHConfig {
   clientId: string;
   domain: string;
   redirectUri?: string;
@@ -89,7 +89,7 @@ export interface AuthState {
   session: Session | null;
 }
 
-export interface SwizAuthClientOptions {
+export interface TSAUTHClientOptions {
   onRedirectCallback?: (redirectUrl?: string) => void;
   onTokenExpired?: () => void;
   onSessionExpired?: () => void;

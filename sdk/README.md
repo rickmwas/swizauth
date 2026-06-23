@@ -1,6 +1,6 @@
-# SwizAuth JavaScript SDK
+# TSAUTH JavaScript SDK
 
-The official JavaScript SDK for SwizAuth - A modern, embeddable authentication solution for web applications.
+The official JavaScript SDK for TSAUTH - A modern, embeddable authentication solution for web applications.
 
 ## Features
 
@@ -17,13 +17,13 @@ The official JavaScript SDK for SwizAuth - A modern, embeddable authentication s
 
 ```bash
 # Using npm
-npm install @swizauth/js
+npm install @tsauth/js
 
 # Using yarn
-yarn add @swizauth/js
+yarn add @tsauth/js
 
 # Using pnpm
-pnpm add @swizauth/js
+pnpm add @tsauth/js
 ```
 
 ## Quick Start
@@ -32,19 +32,19 @@ pnpm add @swizauth/js
 
 ```jsx
 import React from 'react';
-import { SwizAuthProvider, SignIn, useAuth } from '@swizauth/js';
+import { TSAUTHProvider, SignIn, useAuth } from '@tsauth/js';
 
-// Wrap your app with the SwizAuth provider
+// Wrap your app with the TSAUTH provider
 function App() {
   return (
-    <SwizAuthProvider 
+    <TSAUTHProvider 
       config={{
         clientId: 'your_client_id',
         domain: 'https://auth.yourdomain.com'
       }}
     >
       <AuthenticatedApp />
-    </SwizAuthProvider>
+    </TSAUTHProvider>
   );
 }
 
@@ -71,21 +71,21 @@ function AuthenticatedApp() {
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@swizauth/js@latest/dist/swizauth.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tsauth/js@latest/dist/TSAUTH.css">
 </head>
 <body>
   <div id="auth-container"></div>
   
-  <script src="https://cdn.jsdelivr.net/npm/@swizauth/js@latest/dist/swizauth.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tsauth/js@latest/dist/TSAUTH.umd.js"></script>
   <script>
     // Initialize the client
-    const client = new SwizAuth.SwizAuthClient({
+    const client = new TSAUTH.TSAUTHClient({
       clientId: 'your_client_id',
       domain: 'https://auth.yourdomain.com'
     });
 
     // Render the sign-in component
-    SwizAuth.renderSignIn('#auth-container', {
+    TSAUTH.renderSignIn('#auth-container', {
       onSignIn: () => console.log('Signed in!'),
       onError: (error) => console.error('Error:', error)
     });
@@ -100,8 +100,8 @@ function AuthenticatedApp() {
 
 ```javascript
 const config = {
-  clientId: 'your_client_id',        // Required: Your SwizAuth application client ID
-  domain: 'https://auth.yourdomain.com', // Required: Your SwizAuth domain
+  clientId: 'your_client_id',        // Required: Your TSAUTH application client ID
+  domain: 'https://auth.yourdomain.com', // Required: Your TSAUTH domain
   organizationId: 'org_id',          // Optional: Pre-select organization
   redirectUri: 'https://yourapp.com/callback', // Optional: OAuth redirect URI
   audience: 'api.yourdomain.com',    // Optional: API audience
@@ -124,14 +124,14 @@ const options = {
 
 ## React Components
 
-### SwizAuthProvider
+### TSAUTHProvider
 
 The root provider component that manages authentication state.
 
 ```jsx
-<SwizAuthProvider config={config} options={options}>
+<TSAUTHProvider config={config} options={options}>
   {/* Your app components */}
-</SwizAuthProvider>
+</TSAUTHProvider>
 ```
 
 ### SignIn Component
@@ -213,7 +213,7 @@ const {
   user,          // Object: Current user data
   organization,  // Object: Current organization
   session,       // Object: Current session
-  client,        // Object: SwizAuth client instance
+  client,        // Object: TSAUTH client instance
   signIn,        // Function: Sign in method
   signUp,        // Function: Sign up method
   signOut,       // Function: Sign out method
@@ -260,7 +260,7 @@ const {
 ### Client Methods
 
 ```javascript
-const client = new SwizAuth.SwizAuthClient(config, options);
+const client = new TSAUTH.TSAUTHClient(config, options);
 
 // Authentication
 await client.signIn({ email: 'user@example.com', password: 'password' });
@@ -290,16 +290,16 @@ const unsubscribe = client.subscribe((authState) => {
 
 ```javascript
 // Render sign-in component
-SwizAuth.renderSignIn('#container', options);
+TSAUTH.renderSignIn('#container', options);
 
 // Render sign-up component  
-SwizAuth.renderSignUp('#container', options);
+TSAUTH.renderSignUp('#container', options);
 
 // Render user profile
-SwizAuth.renderUserProfile('#container', options);
+TSAUTH.renderUserProfile('#container', options);
 
 // Render organization switcher
-SwizAuth.renderOrganizationSwitcher('#container', options);
+TSAUTH.renderOrganizationSwitcher('#container', options);
 ```
 
 ## Styling and Customization
@@ -310,14 +310,14 @@ You can customize the appearance using CSS custom properties:
 
 ```css
 :root {
-  --swizauth-primary: #your-brand-color;
-  --swizauth-background: #ffffff;
-  --swizauth-foreground: #1f2937;
-  --swizauth-muted: #6b7280;
-  --swizauth-border: #e5e7eb;
-  --swizauth-error: #ef4444;
-  --swizauth-success: #10b981;
-  --swizauth-radius: 8px;
+  --tsauth-primary: #your-brand-color;
+  --tsauth-background: #ffffff;
+  --tsauth-foreground: #1f2937;
+  --tsauth-muted: #6b7280;
+  --tsauth-border: #e5e7eb;
+  --tsauth-error: #ef4444;
+  --tsauth-success: #10b981;
+  --tsauth-radius: 8px;
 }
 ```
 
@@ -362,15 +362,15 @@ The SDK is built with TypeScript and includes comprehensive type definitions:
 
 ```typescript
 import { 
-  SwizAuthClient, 
+  TSAUTHClient, 
   User, 
   Organization, 
   AuthTokens,
   LoginCredentials,
   RegisterCredentials 
-} from '@swizauth/js';
+} from '@tsauth/js';
 
-const client = new SwizAuthClient({
+const client = new TSAUTHClient({
   clientId: 'client_id',
   domain: 'https://auth.example.com'
 });
@@ -394,7 +394,7 @@ const response = await fetch('/api/protected', {
   }
 });
 
-// Backend: Verify token with SwizAuth
+// Backend: Verify token with TSAUTH
 const verifyResponse = await fetch('https://auth.yourdomain.com/api/v1/internal/verify-token', {
   method: 'POST',
   headers: {
@@ -417,7 +417,7 @@ Check out the `/examples` directory for complete integration examples:
 ### Configuration Types
 
 ```typescript
-interface SwizAuthConfig {
+interface TSAUTHConfig {
   clientId: string;
   domain: string;
   redirectUri?: string;
@@ -426,7 +426,7 @@ interface SwizAuthConfig {
   organizationId?: string;
 }
 
-interface SwizAuthClientOptions {
+interface TSAUTHClientOptions {
   onRedirectCallback?: (redirectUrl?: string) => void;
   onTokenExpired?: () => void;
   onSessionExpired?: () => void;
@@ -485,7 +485,7 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- 📚 [Documentation](https://docs.swizauth.com)
-- 💬 [Community Forum](https://community.swizauth.com)
-- 🐛 [Issue Tracker](https://github.com/swizauth/js-sdk/issues)
-- 📧 [Email Support](mailto:support@swizauth.com)
+- 📚 [Documentation](https://docs.TSAUTH.com)
+- 💬 [Community Forum](https://community.TSAUTH.com)
+- 🐛 [Issue Tracker](https://github.com/TSAUTH/js-sdk/issues)
+- 📧 [Email Support](mailto:support@TSAUTH.com)

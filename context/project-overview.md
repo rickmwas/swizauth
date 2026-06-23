@@ -1,6 +1,6 @@
-# Project Overview: SWIZAUTH
+# Project Overview: TSAUTH
 
-SWIZAUTH is a multi-tenant Identity and Access Management (IAM) platform designed to power authentication, authorization, organization management, and developer identity services across all SwizFusion products and third-party applications.
+TSAUTH is a multi-tenant Identity and Access Management (IAM) platform designed to power authentication, authorization, organization management, and developer identity services across all TerraSept products and third-party applications.
 
 The platform functions similarly to Auth0, Clerk, and Keycloak while remaining optimized for African businesses, startups, educational institutions, healthcare organizations, churches, and SaaS platforms. It serves as the centralized source of truth for user identities, permissions, organizations, sessions, API access, and security policies.
 
@@ -20,7 +20,7 @@ The platform functions similarly to Auth0, Clerk, and Keycloak while remaining o
 ## User Types
 
 1. **Platform Super Admin**
-   - Controls the entire SwizAuth ecosystem.
+   - Controls the entire TSAUTH ecosystem.
    - Capabilities: Manage tenants, manage subscriptions, system monitoring, global security controls.
 
 2. **Organization Owner**

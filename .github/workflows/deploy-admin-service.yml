@@ -44,7 +44,7 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Admin Service deployed successfully to https://swizauth-admin.fly.dev"
+          echo "✅ Admin Service deployed successfully to https://tsauth-admin.fly.dev"
 
       - name: Notify deployment failure
         if: failure()

@@ -198,7 +198,7 @@ export default function ApiKeysPage() {
       </div>
 
       {/* Keys Table Card */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="card-premium !p-0 overflow-hidden">
         <div className="overflow-x-auto">
           {loading ? (
             /* Skeleton Loader */
@@ -229,7 +229,7 @@ export default function ApiKeysPage() {
               </tbody>
             </table>
           ) : error ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="card-premium p-12 text-center flex flex-col items-center justify-center space-y-3">
               <AlertCircle className="w-10 h-10 text-destructive" />
               <p className="text-sm font-semibold text-foreground">Failed to load API keys</p>
               <p className="text-xs text-muted-foreground max-w-sm">{error}</p>
@@ -241,7 +241,7 @@ export default function ApiKeysPage() {
               </button>
             </div>
           ) : keys.length === 0 ? (
-            <div className="p-16 text-center flex flex-col items-center justify-center space-y-4">
+            <div className="card-premium p-16 text-center flex flex-col items-center justify-center space-y-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent text-accent-foreground">
                 <KeyRound className="w-6 h-6" />
               </div>
@@ -333,7 +333,7 @@ export default function ApiKeysPage() {
       {/* Creation Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsCreateOpen(false)}
               className="absolute right-4 top-4 text-muted-foreground hover:text-foreground focus:outline-none"
@@ -432,7 +432,7 @@ export default function ApiKeysPage() {
       {/* Show Key Modal (Show once) */}
       {isDisplayKeyOpen && generatedKey && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <h3 className="text-lg font-display font-bold text-foreground flex items-center gap-2 mb-2">
               <KeyRound className="w-5 h-5 text-emerald-500" />
               <span>API Key Generated</span>
@@ -482,7 +482,7 @@ export default function ApiKeysPage() {
       {/* Confirmation Revocation Dialog */}
       {isRevokeOpen && selectedKey && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <h3 className="text-md font-display font-bold text-foreground flex items-center gap-2 mb-2">
               <ShieldAlert className="w-5 h-5 text-destructive" />
               <span>Revoke API Key?</span>

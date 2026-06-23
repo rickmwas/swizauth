@@ -1,4 +1,4 @@
-# Progress Tracker: SWIZAUTH
+# Progress Tracker: TSAUTH
 
 Tracks the implementation status of features and services.
 

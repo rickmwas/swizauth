@@ -4,12 +4,12 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Set global API version prefix
   app.setGlobalPrefix('api/v1');
 
-  // Enable CORS matching swizauth specifications
+  // Enable CORS matching TSAUTH specifications
   app.enableCors({
     origin: process.env.CORS_ALLOWED_ORIGINS
       ? process.env.CORS_ALLOWED_ORIGINS.split(',')
@@ -32,6 +32,6 @@ async function bootstrap() {
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
   await app.listen(port);
-  console.log(`[SwizAuth Admin Service] Running on port ${port}`);
+  console.log(`[TSAUTH Admin Service] Running on port ${port}`);
 }
 void bootstrap();

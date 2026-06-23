@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SwizAuthProvider,
+  TSAUTHProvider,
   SignIn,
   SignUp,
   UserProfile,
@@ -8,17 +8,17 @@ import {
   useAuth,
   useUser,
   useOrganization
-} from '@swizauth/js';
+} from '@tsauth/js';
 
-// Main App wrapper with SwizAuth provider
+// Main App wrapper with TSAUTH provider
 function App() {
-  const swizAuthConfig = {
-    clientId: process.env.REACT_APP_SWIZAUTH_CLIENT_ID || 'your_client_id',
-    domain: process.env.REACT_APP_SWIZAUTH_DOMAIN || 'http://localhost:8080',
-    organizationId: process.env.REACT_APP_SWIZAUTH_ORG_ID, // Optional
+  const TSAUTHConfig = {
+    clientId: process.env.REACT_APP_TSAUTH_CLIENT_ID || 'your_client_id',
+    domain: process.env.REACT_APP_TSAUTH_DOMAIN || 'http://localhost:8080',
+    organizationId: process.env.REACT_APP_TSAUTH_ORG_ID, // Optional
   };
 
-  const swizAuthOptions = {
+  const TSAUTHOptions = {
     storage: 'localStorage', // or 'sessionStorage' or 'memory'
     onTokenExpired: () => {
       console.log('Token expired, please sign in again');
@@ -29,11 +29,11 @@ function App() {
   };
 
   return (
-    <SwizAuthProvider config={swizAuthConfig} options={swizAuthOptions}>
+    <TSAUTHProvider config={TSAUTHConfig} options={TSAUTHOptions}>
       <div className="app">
         <AuthenticatedApp />
       </div>
-    </SwizAuthProvider>
+    </TSAUTHProvider>
   );
 }
 
@@ -66,7 +66,7 @@ function AuthenticationFlow() {
   return (
     <div className="auth-container">
       <div className="auth-header">
-        <h1>Welcome to SwizAuth Demo</h1>
+        <h1>Welcome to TSAUTH Demo</h1>
         <div className="auth-tabs">
           <button 
             className={mode === 'signin' ? 'active' : ''}
@@ -140,7 +140,7 @@ function Header() {
   return (
     <header className="app-header">
       <div className="header-left">
-        <h2>SwizAuth Demo App</h2>
+        <h2>TSAUTH Demo App</h2>
       </div>
       
       <div className="header-center">
@@ -296,7 +296,7 @@ function Settings() {
         <h4>API Integration</h4>
         <p>Use the access token to make authenticated API calls to your backend services.</p>
         <pre><code>{`
-// Example API call with SwizAuth token
+// Example API call with TSAUTH token
 const makeAuthenticatedRequest = async () => {
   const token = client.getAccessToken();
   

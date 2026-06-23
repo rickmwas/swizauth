@@ -1,6 +1,6 @@
-# UI Component Registry: SWIZAUTH
+# UI Component Registry: TSAUTH
 
-This registry tracks the reusable React/Next.js UI components built for the SwizAuth system to ensure absolute visual consistency across development sessions.
+This registry tracks the reusable React/Next.js UI components built for the TSAUTH system to ensure absolute visual consistency across development sessions.
 
 ---
 
@@ -8,7 +8,7 @@ This registry tracks the reusable React/Next.js UI components built for the Swiz
 
 Used for wrapping entry forms (Login, Registration, OTP inputs, password resets).
 
-File: [app/auth/login/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/dashboard/src/app/auth/login/page.tsx)
+File: [app/auth/login/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/dashboard/src/app/auth/login/page.tsx)
 Last updated: 2026-06-09
 
 | Property         | Class                                                            |
@@ -35,7 +35,7 @@ Last updated: 2026-06-09
 
 Standard structure wrapper for authenticated dashboard views.
 
-File: [app/dashboard/layout.tsx](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/dashboard/src/app/dashboard/layout.tsx)
+File: [app/dashboard/layout.tsx](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/dashboard/src/app/dashboard/layout.tsx)
 Last updated: 2026-06-09
 
 | Property         | Class                                                        |
@@ -60,7 +60,7 @@ Last updated: 2026-06-09
 
 Summarized dashboard values showing quick indicators.
 
-File: [app/dashboard/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/dashboard/src/app/dashboard/page.tsx)
+File: [app/dashboard/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/dashboard/src/app/dashboard/page.tsx)
 Last updated: 2026-06-09
 
 | Property         | Class                                                            |
@@ -85,7 +85,7 @@ Last updated: 2026-06-09
 
 Paginated data lists matching filters (Members list, Audit Logs table).
 
-File: [app/dashboard/members/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/dashboard/src/app/dashboard/members/page.tsx)
+File: [app/dashboard/members/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/dashboard/src/app/dashboard/members/page.tsx)
 Last updated: 2026-06-09
 
 | Property         | Class                                                        |
@@ -112,7 +112,7 @@ Last updated: 2026-06-09
 
 Confirmation notifications and form overlays.
 
-File: [app/dashboard/members/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/swizauth/dashboard/src/app/dashboard/members/page.tsx)
+File: [app/dashboard/members/page.tsx](file:///c:/Users/rickm/OneDrive/Desktop/TSAUTH/dashboard/src/app/dashboard/members/page.tsx)
 Last updated: 2026-06-09
 
 | Property         | Class                                                        |

@@ -221,7 +221,7 @@ export default function MembersPage() {
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="card-premium !p-0 overflow-hidden">
         {/* Table Controls (Search and filters) */}
         <div className="p-4 border-b border-border flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative w-full sm:max-w-xs">
@@ -429,7 +429,7 @@ export default function MembersPage() {
       {/* Invitation Modal */}
       {isInviteOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsInviteOpen(false)}
               className="absolute right-4 top-4 text-muted-foreground hover:text-foreground focus:outline-none"
@@ -555,7 +555,7 @@ export default function MembersPage() {
       {/* Revocation Confirmation Dialog */}
       {isDeleteOpen && selectedMember && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
+          <div className="card-premium w-full max-w-sm p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
             <h3 className="text-md font-display font-bold text-foreground flex items-center gap-2 mb-2">
               <AlertCircle className="w-5 h-5 text-destructive" />
               <span>Revoke Membership?</span>

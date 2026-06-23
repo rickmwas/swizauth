@@ -1,6 +1,6 @@
-# SwizAuth Quick Start Guide
+# TSAUTH Quick Start Guide
 
-Get SwizAuth running in production in under 10 minutes!
+Get TSAUTH running in production in under 10 minutes!
 
 ## 🚀 Option 1: Railway.app (Recommended - Easiest)
 
@@ -31,7 +31,7 @@ Get SwizAuth running in production in under 10 minutes!
 
 4. **Access Your Application**
    - Dashboard: `https://your-app.railway.app`
-   - Login: `admin@swizfusion.com` / `Password123!`
+   - Login: `admin@terrasept.com` / `Password123!`
 
 **Total Cost:** Free tier for development, ~$10/month for production
 
@@ -65,7 +65,7 @@ Get SwizAuth running in production in under 10 minutes!
    - Dashboard: http://localhost:3000
    - Admin API: http://localhost:3001
    - Auth Service: http://localhost:8080
-   - Login: `admin@swizfusion.com` / `Password123!`
+   - Login: `admin@terrasept.com` / `Password123!`
 
 ---
 
@@ -163,7 +163,7 @@ curl https://your-dashboard/api/health
 
 3. **Access Dashboard**
    - Visit your dashboard URL
-   - Login with: `admin@swizfusion.com` / `Password123!`
+   - Login with: `admin@terrasept.com` / `Password123!`
    - Verify all dashboard features work
 
 ---
@@ -209,7 +209,7 @@ curl https://your-dashboard/api/health
 
 ## 🎉 Success!
 
-Your SwizAuth system is now running in production with:
+Your TSAUTH system is now running in production with:
 
 ✅ **Multi-tenant authentication system**  
 ✅ **Role-based access control**  

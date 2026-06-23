@@ -1,8 +1,8 @@
 // Core client
-export { SwizAuthClient } from './client/SwizAuthClient';
+export { TSAUTHClient } from './client/TSAuthClient';
 
 // React components and hooks
-export { SwizAuthProvider, useAuth, useUser, useOrganization, useSession } from './react/SwizAuthProvider';
+export { TSAUTHProvider, useAuth, useUser, useOrganization, useSession } from './react/TSAuthProvider';
 export { SignIn } from './react/components/SignIn';
 export { SignUp } from './react/components/SignUp';
 export { UserProfile } from './react/components/UserProfile';
@@ -10,8 +10,8 @@ export { OrganizationSwitcher } from './react/components/OrganizationSwitcher';
 
 // Types
 export type {
-  SwizAuthConfig,
-  SwizAuthClientOptions,
+  TSAUTHConfig,
+  TSAUTHClientOptions,
   User,
   Organization,
   Session,
@@ -30,4 +30,4 @@ export type { UserProfileProps } from './react/components/UserProfile';
 export type { OrganizationSwitcherProps } from './react/components/OrganizationSwitcher';
 
 // CSS (for bundlers that support CSS imports)
-import './styles/swizauth.css';
+import './styles/tsauth.css';

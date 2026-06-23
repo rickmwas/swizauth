@@ -2,32 +2,10 @@ export const dynamic = "force-dynamic";
 
 import React from "react";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getAuthenticatedUser, getOrganizationDetails } from "@/lib/auth";
 import UserMenu from "@/components/UserMenu";
-import {
-  Shield,
-  LayoutDashboard,
-  Users,
-  Terminal,
-  KeyRound,
-  FileSpreadsheet,
-  Building,
-} from "lucide-react";
-
-interface NavItem {
-  name: string;
-  href: string;
-  icon: React.ComponentType<any>;
-}
-
-const navItems: NavItem[] = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Members", href: "/dashboard/members", icon: Users },
-  { name: "Applications", href: "/dashboard/applications", icon: Terminal },
-  { name: "API Keys", href: "/dashboard/api-keys", icon: KeyRound },
-  { name: "Audit Logs", href: "/dashboard/audit-logs", icon: FileSpreadsheet },
-];
+import SidebarNav from "@/components/SidebarNav";
+import { Shield, Building } from "lucide-react";
 
 export default async function DashboardLayout({
   children,
@@ -41,7 +19,7 @@ export default async function DashboardLayout({
   }
 
   const org = await getOrganizationDetails(user.organizationId);
-  const orgName = org?.name || "SwizAuth Tenant";
+  const orgName = org?.name || "TSAUTH Tenant";
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans">
@@ -58,21 +36,7 @@ export default async function DashboardLayout({
         </div>
 
         {/* Navigation links */}
-        <nav className="flex-1 p-4 space-y-1.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
-              >
-                <Icon className="w-4 h-4" />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <SidebarNav />
 
         {/* Active organization context footer */}
         <div className="p-4 border-t border-border bg-accent/5 flex items-center space-x-3">
@@ -114,8 +78,18 @@ export default async function DashboardLayout({
         </header>
 
         {/* Content canvas */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-background via-background to-accent/5">
-          {children}
+        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-background via-background to-accent/5 mesh-bg relative">
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="mesh-node" />
+          <div className="relative z-10 h-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

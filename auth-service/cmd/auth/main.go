@@ -12,11 +12,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/rickmwas/swizauth/auth-service/internal/delivery/middleware"
-	deliveryHttp "github.com/rickmwas/swizauth/auth-service/internal/delivery/http"
-	"github.com/rickmwas/swizauth/auth-service/internal/domain"
-	"github.com/rickmwas/swizauth/auth-service/internal/repository"
-	"github.com/rickmwas/swizauth/auth-service/internal/service"
+	"github.com/rickmwas/tsauth/auth-service/internal/delivery/middleware"
+	deliveryHttp "github.com/rickmwas/tsauth/auth-service/internal/delivery/http"
+	"github.com/rickmwas/tsauth/auth-service/internal/domain"
+	"github.com/rickmwas/tsauth/auth-service/internal/repository"
+	"github.com/rickmwas/tsauth/auth-service/internal/service"
 )
 
 func main() {
@@ -73,6 +73,8 @@ func main() {
 	sessionRepo := repository.NewSessionRepository(dbPool)
 	verificationRepo := repository.NewVerificationRepository(dbPool)
 	mfaRepo := repository.NewMfaRepository(dbPool)
+	organizationRepo := repository.NewOrganizationRepository(dbPool)
+	onboardingRepo := repository.NewOnboardingRepository(dbPool)
 
 	// 4.2 Initialize Services
 	passwordSvc := service.NewPasswordService()
@@ -86,7 +88,7 @@ func main() {
 		log.Fatalf("Failed to initialize CryptoService: %v\n", err)
 	}
 
-	totpSvc := service.NewTotpService("SwizAuth")
+	totpSvc := service.NewTotpService("TSAUTH")
 
 	// 4.3 Initialize HTTP Handlers
 	authHandler := deliveryHttp.NewAuthHandler(
@@ -94,6 +96,8 @@ func main() {
 		sessionRepo,
 		verificationRepo,
 		mfaRepo,
+		organizationRepo,
+		onboardingRepo,
 		passwordSvc,
 		tokenSvc,
 		cryptoSvc,
@@ -126,6 +130,7 @@ func main() {
 		auth := apiV1.Group("/auth")
 		{
 			auth.POST("/register", middleware.RateLimiter(rdb, "register", 5, time.Minute), authHandler.Register)
+			auth.POST("/onboard", authHandler.Onboard)
 			auth.POST("/login", middleware.RateLimiter(rdb, "login", 10, time.Minute), authHandler.Login)
 			auth.GET("/verify", authHandler.Verify)
 			auth.POST("/logout", authHandler.Logout)

@@ -1,6 +1,6 @@
-# SWIZAUTH MVP Build Plan
+# TSAUTH MVP Build Plan
 
-This build plan details the sequenced steps for implementing the SWIZAUTH multi-tenant identity and access management system.
+This build plan details the sequenced steps for implementing the TSAUTH multi-tenant identity and access management system.
 
 ---
 
