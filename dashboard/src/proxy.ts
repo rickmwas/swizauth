@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { decodeJwt } from "jose";
 import { GO_AUTH_URL } from "./lib/config";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const accessToken = request.cookies.get("access_token")?.value;
