@@ -388,22 +388,22 @@ func main() {
 		name   string
 		module string
 	}{
-		{"e2e-perm-001", "users.read", "users"},
-		{"e2e-perm-002", "users.create", "users"},
-		{"e2e-perm-003", "users.update", "users"},
-		{"e2e-perm-004", "users.delete", "users"},
-		{"e2e-perm-005", "applications.read", "developer"},
-		{"e2e-perm-006", "applications.create", "developer"},
-		{"e2e-perm-007", "applications.update", "developer"},
-		{"e2e-perm-008", "applications.delete", "developer"},
-		{"e2e-perm-009", "api_keys.read", "developer"},
-		{"e2e-perm-010", "api_keys.create", "developer"},
-		{"e2e-perm-011", "api_keys.delete", "developer"},
-		{"e2e-perm-012", "audit_logs.read", "audit"},
-		{"e2e-perm-013", "roles.read", "roles"},
-		{"e2e-perm-014", "roles.create", "roles"},
-		{"e2e-perm-015", "roles.update", "roles"},
-		{"e2e-perm-016", "roles.delete", "roles"},
+		{"00000000-0000-0000-0000-000000000001", "users.read", "users"},
+		{"00000000-0000-0000-0000-000000000002", "users.create", "users"},
+		{"00000000-0000-0000-0000-000000000003", "users.update", "users"},
+		{"00000000-0000-0000-0000-000000000004", "users.delete", "users"},
+		{"00000000-0000-0000-0000-000000000005", "applications.read", "developer"},
+		{"00000000-0000-0000-0000-000000000006", "applications.create", "developer"},
+		{"00000000-0000-0000-0000-000000000007", "applications.update", "developer"},
+		{"00000000-0000-0000-0000-000000000008", "applications.delete", "developer"},
+		{"00000000-0000-0000-0000-000000000009", "api_keys.read", "developer"},
+		{"00000000-0000-0000-0000-000000000010", "api_keys.create", "developer"},
+		{"00000000-0000-0000-0000-000000000011", "api_keys.delete", "developer"},
+		{"00000000-0000-0000-0000-000000000012", "audit_logs.read", "audit"},
+		{"00000000-0000-0000-0000-000000000013", "roles.read", "roles"},
+		{"00000000-0000-0000-0000-000000000014", "roles.create", "roles"},
+		{"00000000-0000-0000-0000-000000000015", "roles.update", "roles"},
+		{"00000000-0000-0000-0000-000000000016", "roles.delete", "roles"},
 	}
 
 	now := time.Now()
@@ -903,6 +903,6 @@ func cleanupDatabase(ctx context.Context, pool *pgxpool.Pool) {
 	_, _ = pool.Exec(ctx, `DELETE FROM auth.users WHERE email IN ('tester@tsauth.local', 'e2e-invited@tsauth.local', 'e2e-unprivileged@tsauth.local')`)
 	// Delete test organization (cascades to roles, sessions, applications, api_keys, audit_logs)
 	_, _ = pool.Exec(ctx, `DELETE FROM public.organizations WHERE slug = 'tester-org'`)
-	// Clean up E2E-seeded permissions (only remove if they have the e2e prefix IDs)
-	_, _ = pool.Exec(ctx, `DELETE FROM auth.permissions WHERE id LIKE 'e2e-perm-%'`)
+	// Clean up E2E-seeded permissions (only remove if they have our specific test UUID prefix)
+	_, _ = pool.Exec(ctx, "DELETE FROM auth.permissions WHERE id::text LIKE '00000000-0000-0000-0000-0000000000%'")
 }

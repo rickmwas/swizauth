@@ -6,6 +6,7 @@ import {
   Body,
   ParseUUIDPipe,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -49,6 +50,7 @@ export class ApplicationsController {
   }
 
   @Post(':id/rotate-secret')
+  @HttpCode(200)
   @Permissions('applications.update')
   rotateSecret(
     @GetUser() user: AuthenticatedUser,

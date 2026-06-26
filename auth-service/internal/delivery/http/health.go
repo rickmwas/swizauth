@@ -26,6 +26,7 @@ func NewHealthHandler(db *pgxpool.Pool, redis *redis.Client) *HealthHandler {
 
 // HealthResponse represents the health check response
 type HealthResponse struct {
+	Success   bool      `json:"success"`
 	Status    string    `json:"status"`
 	Timestamp time.Time `json:"timestamp"`
 	Service   string    `json:"service"`
@@ -35,6 +36,7 @@ type HealthResponse struct {
 // HealthHandler handles health check requests
 func (h *HealthHandler) HealthHandler(c *gin.Context) {
 	response := HealthResponse{
+		Success:   true,
 		Status:    "healthy",
 		Timestamp: time.Now(),
 		Service:   "auth-service",
@@ -72,6 +74,7 @@ func (h *HealthHandler) ReadinessHandler(c *gin.Context) {
 	}
 
 	response := HealthResponse{
+		Success:   true,
 		Status:    "ready",
 		Timestamp: time.Now(),
 		Service:   "auth-service",

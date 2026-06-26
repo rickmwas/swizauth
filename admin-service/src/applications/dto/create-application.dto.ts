@@ -29,27 +29,27 @@ export class CreateApplicationDto {
 
   @IsArray()
   @IsOptional()
-  @IsUrl({}, { each: true, message: 'Each redirect URL must be a valid URL' })
+  @IsUrl({ require_tld: false }, { each: true, message: 'Each redirect URL must be a valid URL' })
   redirect_urls?: string[];
 
   @IsArray()
   @IsOptional()
-  @IsUrl({}, { each: true, message: 'Each allowed origin must be a valid URL' })
+  @IsUrl({ require_tld: false }, { each: true, message: 'Each allowed origin must be a valid URL' })
   allowed_origins?: string[];
 
   @IsArray()
   @IsOptional()
-  @IsUrl({}, { each: true, message: 'Each logout URL must be a valid URL' })
+  @IsUrl({ require_tld: false }, { each: true, message: 'Each logout URL must be a valid URL' })
   logout_urls?: string[];
 
   @IsArray()
   @IsOptional()
-  @IsUrl({}, { each: true, message: 'Each web origin must be a valid URL' })
+  @IsUrl({ require_tld: false }, { each: true, message: 'Each web origin must be a valid URL' })
   web_origins?: string[];
 
   @IsString()
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   logo_url?: string;
 
   @IsString()
