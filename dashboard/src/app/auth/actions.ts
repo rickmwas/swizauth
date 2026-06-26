@@ -2,8 +2,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { GO_AUTH_URL } from "../../lib/config";
 
-const GO_AUTH_BASE = "http://localhost:8080/api/v1";
+const GO_AUTH_BASE = `${GO_AUTH_URL}/api/v1`;
 
 export interface ActionResponse {
   success: boolean;

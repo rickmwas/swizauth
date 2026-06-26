@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const NEST_ADMIN_BASE = "http://localhost:3001";
+const NEST_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL || "http://localhost:3001";
 
 // GET /api/api-keys
 export async function GET(request: NextRequest) {

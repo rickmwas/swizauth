@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeJwt } from "jose";
+import { GO_AUTH_URL } from "./lib/config";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -34,7 +35,7 @@ export async function middleware(request: NextRequest) {
       try {
         // Hit Go auth-service to rotate refresh token
         const refreshResponse = await fetch(
-          "http://localhost:8080/api/v1/auth/refresh",
+          `${GO_AUTH_URL}/api/v1/auth/refresh`,
           {
             method: "POST",
             headers: {

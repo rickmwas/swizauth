@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
+import { NEST_ADMIN_URL } from "./config";
 
 export interface AuthenticatedUser {
   id: string;
@@ -52,7 +53,7 @@ export async function getOrganizationDetails(
     const token = cookieStore.get("access_token")?.value;
     if (!token) return null;
 
-    const res = await fetch(`http://localhost:3001/organizations/${orgId}`, {
+    const res = await fetch(`${NEST_ADMIN_URL}/organizations/${orgId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
