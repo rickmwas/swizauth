@@ -56,11 +56,17 @@ func main() {
 	log.Println("Database connection pool established successfully")
 
 	// 4. Connect to Redis
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     cfg.RedisURL,
-		Password: cfg.RedisPassword,
-		DB:       cfg.RedisDB,
-	})
+	var rdbOptions *redis.Options
+	if opt, err := redis.ParseURL(cfg.RedisURL); err == nil {
+		rdbOptions = opt
+	} else {
+		rdbOptions = &redis.Options{
+			Addr:     cfg.RedisURL,
+			Password: cfg.RedisPassword,
+			DB:       cfg.RedisDB,
+		}
+	}
+	rdb := redis.NewClient(rdbOptions)
 	defer rdb.Close()
 
 	if err := rdb.Ping(ctx).Err(); err != nil {
