@@ -18,8 +18,14 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Install only production dependencies
+# Backup the generated Prisma client before pruning dev dependencies
+RUN cp -R node_modules/.prisma /tmp/.prisma
+
+# Install only production dependencies (wipes node_modules)
 RUN npm ci --only=production
+
+# Restore the generated Prisma client to production node_modules
+RUN cp -R /tmp/.prisma node_modules/
 
 # Production stage
 FROM node:20-alpine AS production
