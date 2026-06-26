@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock, Code, BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getRegisterUrl } from "@/const";
 
 export default function Documentation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,7 +33,9 @@ export default function Documentation() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</a>
-            <Button className="btn-primary">Start Free</Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">Start Free</Button>
+            </a>
           </div>
         </div>
       </nav>
@@ -125,9 +128,11 @@ export default function Documentation() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Start building with our comprehensive documentation and examples.
             </p>
-            <Button className="btn-primary">
-              View Full Docs <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">
+                View Full Docs <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </a>
           </div>
         </div>
       </section>

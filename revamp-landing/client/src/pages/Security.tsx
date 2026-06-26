@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock, Shield, Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getRegisterUrl } from "@/const";
 
 export default function Security() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,7 +33,9 @@ export default function Security() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</a>
-            <Button className="btn-primary">Start Free</Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">Start Free</Button>
+            </a>
           </div>
         </div>
       </nav>
@@ -113,10 +116,14 @@ export default function Security() {
               Learn more about our security practices and certifications.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="btn-primary">
-                Download Security Report <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button className="btn-secondary">Contact Security Team</Button>
+              <a href="/contact">
+                <Button className="btn-primary">
+                  Download Security Report <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </a>
+              <a href="/contact">
+                <Button className="btn-secondary">Contact Security Team</Button>
+              </a>
             </div>
           </div>
         </div>

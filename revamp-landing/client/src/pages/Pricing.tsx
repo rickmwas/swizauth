@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock, Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getRegisterUrl } from "@/const";
 
 export default function Pricing() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -82,7 +83,9 @@ export default function Pricing() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</a>
-            <Button className="btn-primary">Start Free</Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">Start Free</Button>
+            </a>
           </div>
         </div>
       </nav>
@@ -127,9 +130,11 @@ export default function Pricing() {
                   </div>
                 </div>
 
-                <Button className={`w-full mb-8 ${plan.featured ? "btn-primary" : "btn-secondary"}`}>
-                  {plan.cta}
-                </Button>
+                <a href={plan.cta === "Start Free" ? getRegisterUrl() : "/contact"} className="w-full">
+                  <Button className={`w-full mb-8 ${plan.featured ? "btn-primary" : "btn-secondary"}`}>
+                    {plan.cta}
+                  </Button>
+                </a>
 
                 <div className="space-y-4 flex-1">
                   {plan.features.map((feature, fidx) => (
@@ -175,9 +180,11 @@ export default function Pricing() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Start your 14-day free trial today. No credit card required.
             </p>
-            <Button className="btn-primary">
-              Start Free <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">
+                Start Free <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </a>
           </div>
         </div>
       </section>

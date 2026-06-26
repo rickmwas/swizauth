@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getRegisterUrl } from "@/const";
 
 export default function About() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,7 +33,9 @@ export default function About() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-primary">About</a>
-            <Button className="btn-primary">Start Free</Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">Start Free</Button>
+            </a>
           </div>
         </div>
       </nav>
@@ -112,10 +115,14 @@ export default function About() {
               We're hiring talented engineers and designers. Help us build the future of identity.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="btn-primary">
-                View Careers <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button className="btn-secondary">Contact Us</Button>
+              <a href="/contact">
+                <Button className="btn-primary">
+                  View Careers <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </a>
+              <a href="/contact">
+                <Button className="btn-secondary">Contact Us</Button>
+              </a>
             </div>
           </div>
         </div>

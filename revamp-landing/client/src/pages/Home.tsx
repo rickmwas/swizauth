@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock, Shield, Users, Zap, Globe, Database, Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getRegisterUrl } from "@/const";
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -83,9 +84,11 @@ export default function Home() {
             <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">
               About
             </a>
-            <Button className="btn-primary">
-              Start Free
-            </Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">
+                Start Free
+              </Button>
+            </a>
           </div>
         </div>
       </nav>
@@ -114,12 +117,16 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="btn-primary">
-                  Start Free <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                <Button className="btn-secondary">
-                  View Docs
-                </Button>
+                <a href={getRegisterUrl()} className="w-full sm:w-auto">
+                  <Button className="btn-primary w-full">
+                    Start Free <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
+                <a href="/docs" className="w-full sm:w-auto">
+                  <Button className="btn-secondary w-full">
+                    View Docs
+                  </Button>
+                </a>
               </div>
 
               <div className="flex items-center gap-6 pt-4">
@@ -278,12 +285,16 @@ export default function Home() {
               Join enterprises securing their infrastructure with TerraSept Auth.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="btn-primary">
-                Start Free <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button className="btn-secondary">
-                Schedule Demo
-              </Button>
+              <a href={getRegisterUrl()}>
+                <Button className="btn-primary">
+                  Start Free <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </a>
+              <a href="/contact">
+                <Button className="btn-secondary">
+                  Schedule Demo
+                </Button>
+              </a>
             </div>
           </div>
         </div>

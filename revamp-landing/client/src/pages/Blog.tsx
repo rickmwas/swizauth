@@ -1,5 +1,6 @@
 import { ArrowRight, Calendar, User } from "lucide-react";
 import { Link } from "wouter";
+import { getRegisterUrl } from "@/const";
 
 const blogPosts = [
   {
@@ -90,9 +91,12 @@ export default function Blog() {
             <Link href="/about">
               <a className="text-foreground/70 hover:text-foreground transition-colors">About</a>
             </Link>
-            <button className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:shadow-lg transition-all">
-              Start Free
-            </button>
+            <a href={getRegisterUrl()}>
+              <button className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:shadow-lg transition-all cursor-pointer">
+                Start Free
+              </button>
+            </a>
+
           </div>
         </div>
       </nav>

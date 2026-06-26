@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Lock, Mail, Phone, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getRegisterUrl } from "@/const";
 
 export default function Contact() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,10 +35,13 @@ export default function Contact() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</a>
-            <Button className="btn-primary">Start Free</Button>
+            <a href={getRegisterUrl()}>
+              <Button className="btn-primary">Start Free</Button>
+            </a>
           </div>
         </div>
       </nav>
+
 
       {/* Hero */}
       <section className="relative pt-32 md:pt-40 lg:pt-48 pb-24 md:pb-32">
