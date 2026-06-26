@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { verifyMfaAction } from "../actions";
 import { Shield, Loader2, AlertCircle, KeyRound } from "lucide-react";
 
+import Link from "next/link";
+
 export default function VerifyMfaPage() {
   const router = useRouter();
   const [code, setCode] = useState<string[]>(Array(6).fill(""));
@@ -162,9 +164,9 @@ export default function VerifyMfaPage() {
 
       <div className="mt-6 text-center text-xs text-muted-foreground">
         Go back to{" "}
-        <a href="/auth/login" className="font-semibold text-primary hover:underline">
+        <Link href="/auth/login" className="font-semibold text-primary hover:underline">
           Login page
-        </a>
+        </Link>
       </div>
     </div>
   );

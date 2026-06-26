@@ -1,6 +1,6 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/((?!assets/|manus-storage/|favicon.ico|.*\\..*).*)" , "destination": "/index.html" }
+    { "source": "/((?!assets/|manus-storage/|favicon.ico).*)", "destination": "/index.html" }
   ]
 }

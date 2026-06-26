@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Lock, Mail, Phone, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getRegisterUrl } from "@/const";
+import { Link } from "wouter";
 
 export default function Contact() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,18 +24,18 @@ export default function Contact() {
         }`}
       >
         <div className="container flex items-center justify-between h-16 md:h-20">
-          <a href="/" className="flex items-center gap-2 group cursor-pointer">
+          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
             <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-16 w-auto group-hover:opacity-80 transition-opacity duration-300" />
             <span className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors duration-300">TerraSept Auth</span>
-          </a>
+          </Link>
           <div className="hidden md:flex items-center gap-8">
-            <a href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Features</a>
-            <a href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Pricing</a>
-            <a href="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Security</a>
-            <a href="/docs" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Docs</a>
+            <Link href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Features</Link>
+            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Pricing</Link>
+            <Link href="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Security</Link>
+            <Link href="/docs" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Docs</Link>
           </div>
           <div className="flex items-center gap-3">
-            <a href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</a>
+            <Link href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</Link>
             <a href={getRegisterUrl()}>
               <Button className="btn-primary">Start Free</Button>
             </a>
@@ -124,15 +125,15 @@ export default function Contact() {
             <div>
               <p className="text-xs font-semibold text-primary mb-4">PRODUCT</p>
               <ul className="space-y-2">
-                <li><a href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Security</a></li>
+                <li><Link href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
+                <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+                <li><Link href="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Security</Link></li>
               </ul>
             </div>
             <div>
               <p className="text-xs font-semibold text-primary mb-4">DEVELOPERS</p>
               <ul className="space-y-2">
-                <li><a href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</a></li>
+                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
                 <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</a></li>
                 <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SDKs</a></li>
               </ul>
@@ -140,8 +141,8 @@ export default function Contact() {
             <div>
               <p className="text-xs font-semibold text-primary mb-4">COMPANY</p>
               <ul className="space-y-2">
-                <li><a href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a></li>
+                <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link></li>
+                <li><Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
                 <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
               </ul>
             </div>
@@ -150,7 +151,7 @@ export default function Contact() {
               <ul className="space-y-2">
                 <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a></li>
                 <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a></li>
-                <li><a href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</a></li>
+                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
               </ul>
             </div>
           </div>

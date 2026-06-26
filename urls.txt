@@ -1,0 +1,2 @@
+postgresql://tsauth_user:jmtjElse9i6pTb0cb9Mqhl4DZ9qaGvrC@dpg-d8v9kvtaeets739cn8qg-a/tsauth_postgres
+redis://red-d8v9mptckfvc73fd99eg:6379
