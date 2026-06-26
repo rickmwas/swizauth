@@ -15,6 +15,9 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+# Generate fallback development keys if they do not exist
+RUN if [ ! -d "certs" ] || [ ! -f "certs/private.pem" ]; then go run cmd/keygen/main.go; fi
+
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/auth
 
