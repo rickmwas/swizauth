@@ -201,11 +201,19 @@ export default function RegisterPage() {
         </form>
       )}
 
-      <div className="mt-6 text-center text-xs text-muted-foreground">
-        Already have a tenant?{" "}
-        <Link href="/auth/login" className="font-semibold text-primary hover:underline">
-          Sign In
-        </Link>
+      <div className="mt-6 flex flex-col items-center space-y-2 text-xs text-muted-foreground">
+        <div>
+          Want to create a new organization?{" "}
+          <Link href="/auth/onboard" className="font-semibold text-primary hover:underline">
+            Onboard here &rarr;
+          </Link>
+        </div>
+        <div>
+          Already have a tenant?{" "}
+          <Link href="/auth/login" className="font-semibold text-primary hover:underline">
+            Sign In
+          </Link>
+        </div>
       </div>
     </div>
   );

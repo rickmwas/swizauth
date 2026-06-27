@@ -206,6 +206,75 @@ export async function registerAction(prevState: any, formData: FormData): Promis
   }
 }
 
+export async function onboardAction(prevState: any, formData: FormData): Promise<ActionResponse> {
+  const organizationName = formData.get("organization_name")?.toString();
+  const slug = formData.get("slug")?.toString();
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
+
+  if (!organizationName || !email || !password) {
+    return {
+      success: false,
+      error: { code: "VALIDATION_ERROR", message: "Organization name, email, and password are required" },
+    };
+  }
+
+  try {
+    const res = await fetch(`${GO_AUTH_BASE}/auth/onboard`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        organization_name: organizationName,
+        slug: slug || undefined,
+        email,
+        password,
+      }),
+      cache: "no-store",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: data.error || { code: "BAD_REQUEST", message: "Onboarding failed" },
+      };
+    }
+
+    // On successful onboarding, set the session cookies immediately
+    if (data.tokens && data.tokens.access_token && data.tokens.refresh_token) {
+      const cookieStore = await cookies();
+      cookieStore.set({
+        name: "access_token",
+        value: data.tokens.access_token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 900, // 15 mins
+      });
+
+      cookieStore.set({
+        name: "refresh_token",
+        value: data.tokens.refresh_token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+      });
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Onboard action error:", error);
+    return {
+      success: false,
+      error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to connect to onboarding server" },
+    };
+  }
+}
+
 export async function forgotPasswordAction(prevState: any, formData: FormData): Promise<ActionResponse> {
   const email = formData.get("email")?.toString();
 
