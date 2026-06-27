@@ -1,273 +1,110 @@
-import { ArrowRight, Calendar, User } from "lucide-react";
 import { Link } from "wouter";
-import { getRegisterUrl } from "@/const";
+import { Button } from "@/components/ui/button";
+import { Calendar, User, Search, ArrowRight, Rss } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const blogPosts = [
   {
     id: 1,
-    title: "Zero Trust Architecture: The Future of Enterprise Security",
-    excerpt: "Explore how zero trust principles are transforming enterprise identity infrastructure and why adoption is critical for modern organizations.",
+    title: "Tuning Argon2id Parameters for Enterprise Auth Services",
+    excerpt: "A technical dive into memory cost (m), iteration count (t), and parallelism (p) thresholds to protect identities against GPU-based password cracking.",
     author: "Sarah Chen",
-    date: "June 8, 2026",
-    category: "Security",
+    date: "June 25, 2026",
+    category: "Cryptography",
     readTime: "8 min read",
   },
   {
     id: 2,
-    title: "Passwordless Authentication: Why It's Time to Move On",
-    excerpt: "Passwords are dead. Learn why passwordless authentication is the future and how to implement it securely in your applications.",
+    title: "Refresh Token Rotation (RTR): Mitigating Replay Attacks",
+    excerpt: "How to implement rotating refresh cycles with atomic database operations and instant revocation states inside high-throughput Redis databases.",
     author: "James Mitchell",
-    date: "June 1, 2026",
+    date: "June 18, 2026",
     category: "Authentication",
     readTime: "6 min read",
   },
   {
     id: 3,
-    title: "Multi-Tenant SaaS: Authorization Best Practices",
-    excerpt: "Building secure multi-tenant applications requires careful authorization design. We share proven patterns and anti-patterns from enterprise deployments.",
+    title: "Logical Tenant Isolation: Partitioning PostgreSQL at Scale",
+    excerpt: "Designing composite database indices and structuring NestJS/Go ORMs to enforce organization_id isolation boundaries safely.",
     author: "Alex Rodriguez",
     date: "May 25, 2026",
-    category: "Authorization",
+    category: "Database Design",
     readTime: "10 min read",
   },
   {
     id: 4,
-    title: "GDPR Compliance: A Technical Guide for Developers",
-    excerpt: "Navigate GDPR requirements with practical guidance on data handling, consent management, and audit logging for your identity platform.",
-    author: "Emma Watson",
-    date: "May 18, 2026",
-    category: "Compliance",
-    readTime: "12 min read",
-  },
-  {
-    id: 5,
-    title: "API Security: Protecting Your Identity Infrastructure",
-    excerpt: "Secure your APIs with rate limiting, token validation, and encryption. Learn the essential security practices for identity platforms.",
+    title: "Token Buckets rate limiters utilizing Redis & Gin middleware",
+    excerpt: "Implementing low-latency rate checks at the entry gate of Go servers. Performance traces showing sub-millisecond evaluation cycles.",
     author: "David Park",
     date: "May 11, 2026",
-    category: "Security",
+    category: "Operations",
     readTime: "9 min read",
-  },
-  {
-    id: 6,
-    title: "Case Study: How Enterprise X Reduced Auth Costs by 60%",
-    excerpt: "See how a Fortune 500 company optimized their identity infrastructure and achieved significant cost savings with TerraSept Auth.",
-    author: "Lisa Johnson",
-    date: "May 4, 2026",
-    category: "Case Study",
-    readTime: "7 min read",
-  },
+  }
 ];
 
 export default function Blog() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container flex items-center justify-between py-4">
-          <Link href="/">
-            <a className="flex items-center gap-2 font-bold text-xl hover:opacity-80 transition-opacity">
-              <img
-                src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png"
-                alt="TerraSept Auth"
-                className="h-10 w-auto"
-              />
-              TerraSept Auth
-            </a>
-          </Link>
-          <div className="flex items-center gap-8">
-            <Link href="/features">
-              <a className="text-foreground/70 hover:text-foreground transition-colors">Features</a>
-            </Link>
-            <Link href="/pricing">
-              <a className="text-foreground/70 hover:text-foreground transition-colors">Pricing</a>
-            </Link>
-            <Link href="/security">
-              <a className="text-foreground/70 hover:text-foreground transition-colors">Security</a>
-            </Link>
-            <Link href="/docs">
-              <a className="text-foreground/70 hover:text-foreground transition-colors">Docs</a>
-            </Link>
-            <Link href="/about">
-              <a className="text-foreground/70 hover:text-foreground transition-colors">About</a>
-            </Link>
-            <a href={getRegisterUrl()}>
-              <button className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:shadow-lg transition-all cursor-pointer">
-                Start Free
-              </button>
-            </a>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <Header />
 
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="relative py-20 md:py-28 lg:py-32 mesh-bg">
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="mesh-node" />
-          ))}
-        </div>
-        <div className="container">
-          <div className="max-w-3xl">
-            <p className="text-small text-primary font-medium mb-4">INSIGHTS & UPDATES</p>
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
-              Security Insights for Enterprise Builders
+      <main className="flex-grow pt-20">
+        {/* Section 1: Hero */}
+        <section className="py-20 md:py-28 border-b border-border bg-[#02050c] relative">
+          <div className="container mx-auto px-6 max-w-3xl">
+            <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest mb-3">
+              Engineering Blog
+            </p>
+            <h1 className="text-display font-display font-bold text-foreground mb-6">
+              Identity & Cryptography Specifications
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              Expert perspectives on identity infrastructure, security best practices, and real-world implementation strategies.
+            <p className="text-subheadline text-muted-foreground">
+              Deep dives into key derivation parameters, asymmetric credentials validation, and multi-tenant database scaling choices.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Blog Grid */}
-      <section className="relative py-20 md:py-28 lg:py-32">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post) => (
-              <article
-                key={post.id}
-                className="group bg-card border border-border rounded-lg p-6 hover:border-primary/50 hover:shadow-lg transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                    {post.category}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{post.readTime}</span>
-                </div>
-
-                <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                  {post.title}
-                </h3>
-
-                <p className="text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
-                  {post.excerpt}
-                </p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2 text-sm text-foreground/70">
-                      <User className="w-4 h-4" />
-                      {post.author}
+        {/* Section 2: Articles Directory */}
+        <section className="py-24 bg-background">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {blogPosts.map((post) => (
+                <div key={post.id} className="border border-border bg-[#050914] p-8 rounded-xl flex flex-col justify-between hover:border-primary/45 transition-all">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-mono text-muted-foreground mb-4">
+                      <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary rounded font-bold uppercase">
+                        {post.category}
+                      </span>
+                      <span>{post.readTime}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-foreground/70">
-                      <Calendar className="w-4 h-4" />
-                      {post.date}
+                    
+                    <h3 className="text-lg font-display font-bold text-foreground mb-3 leading-tight">
+                      {post.title}
+                    </h3>
+                    
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-6 font-mono">
+                      {post.excerpt}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-border/60 pt-4 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <User className="w-3.5 h-3.5 text-primary" />
+                      <span>{post.author}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{post.date}</span>
                     </div>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
-              </article>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* CTA Section */}
-      <section className="relative py-20 md:py-28 lg:py-32 bg-secondary/30 mesh-bg">
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="mesh-node" />
-          ))}
-        </div>
-        <div className="container text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Stay Updated on Security</h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Subscribe to our newsletter for the latest insights on enterprise identity infrastructure and security best practices.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="px-6 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-            <button className="px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:shadow-lg transition-all">
-              Subscribe
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative border-t border-border py-16 md:py-20">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div>
-              <img
-                src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png"
-                alt="TerraSept Auth"
-                className="h-10 w-auto mb-4"
-              />
-              <p className="text-sm text-muted-foreground">Enterprise identity infrastructure built for trust.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/features">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/security">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">Security</a>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Developers</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/docs">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">Documentation</a>
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">API Reference</a>
-                </li>
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">SDKs</a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/about">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">About</a>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/blog">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">Blog</a>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact">
-                    <a className="text-muted-foreground hover:text-foreground transition-colors">Contact</a>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© 2026 TerraSept Auth. All rights reserved.</p>
-            <div className="flex gap-6 text-sm">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

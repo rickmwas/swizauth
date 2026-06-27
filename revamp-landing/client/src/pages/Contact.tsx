@@ -1,169 +1,201 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, Mail, Phone, MapPin } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getRegisterUrl } from "@/const";
-import { Link } from "wouter";
+import { Mail, Phone, Clock, Loader2, AlertCircle } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function Contact() {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    company: "",
+    message: ""
+  });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (validationError) setValidationError(null);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Simple inline validation check
+    if (!formData.name || !formData.email || !formData.message) {
+      setValidationError("Please fill in all required parameters (Name, Email, Message).");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus("idle");
+
+    try {
+      // Simulate API submit latency
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setSubmitStatus("success");
+      setFormData({ name: "", email: "", company: "", message: "" });
+    } catch (err) {
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
-      {/* Navigation */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border" : "bg-transparent"
-        }`}
-      >
-        <div className="container flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-16 w-auto group-hover:opacity-80 transition-opacity duration-300" />
-            <span className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors duration-300">TerraSept Auth</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Features</Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Pricing</Link>
-            <Link href="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Security</Link>
-            <Link href="/docs" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Docs</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">About</Link>
-            <a href={getRegisterUrl()}>
-              <Button className="btn-primary">Start Free</Button>
-            </a>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <Header />
 
-
-      {/* Hero */}
-      <section className="relative pt-32 md:pt-40 lg:pt-48 pb-24 md:pb-32">
-        <div className="container">
-          <div className="max-w-3xl">
-            <p className="text-small text-primary font-medium mb-4">CONTACT</p>
-            <h1 className="text-headline font-bold mb-6">Get in touch</h1>
-            <p className="text-lg text-muted-foreground">
-              Have questions? Our team is here to help. Reach out anytime.
+      <main className="flex-grow pt-20">
+        {/* Section 1: Hero */}
+        <section className="py-20 md:py-28 border-b border-border bg-[#02050c] relative">
+          <div className="container mx-auto px-6 max-w-3xl">
+            <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest mb-3">
+              Contact Sales
+            </p>
+            <h1 className="text-display font-display font-bold text-foreground mb-6">
+              Connect with Platform Engineers
+            </h1>
+            <p className="text-subheadline text-muted-foreground">
+              Request a security audit, dedicated PostgreSQL connection pool specifications, or custom enterprise SLAs.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Contact Form & Info */}
-      <section className="relative py-20 md:py-28 border-t border-border">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Form */}
-            <div className="md:col-span-2">
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Name</label>
-                    <Input placeholder="Your name" className="bg-secondary border-border" />
+        {/* Section 2: Contact Form & Info Grid */}
+        <section className="py-24 bg-background">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-6xl mx-auto">
+              {/* Form panel */}
+              <div className="lg:col-span-7 border border-border bg-[#050914] p-8 rounded-xl shadow-xl">
+                <form className="space-y-6" onSubmit={handleFormSubmit}>
+                  {validationError && (
+                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3 text-xs text-destructive font-mono">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>{validationError}</span>
+                    </div>
+                  )}
+
+                  {submitStatus === "success" && (
+                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-500 font-mono">
+                      Request logged successfully. An identity engineer will review your variables shortly.
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-mono font-semibold text-muted-foreground uppercase mb-2">
+                        Full Name *
+                      </label>
+                      <Input
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        disabled={isSubmitting}
+                        placeholder="Enter name"
+                        className="bg-background border-border text-foreground focus:ring-primary focus:border-primary font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono font-semibold text-muted-foreground uppercase mb-2">
+                        Work Email *
+                      </label>
+                      <Input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        disabled={isSubmitting}
+                        placeholder="you@company.com"
+                        className="bg-background border-border text-foreground focus:ring-primary focus:border-primary font-mono text-xs"
+                      />
+                    </div>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium mb-2">Email</label>
-                    <Input type="email" placeholder="your@email.com" className="bg-secondary border-border" />
+                    <label className="block text-xs font-mono font-semibold text-muted-foreground uppercase mb-2">
+                      Company Name
+                    </label>
+                    <Input
+                      name="company"
+                      value={formData.company}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      placeholder="Organization"
+                      className="bg-background border-border text-foreground focus:ring-primary focus:border-primary font-mono text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-semibold text-muted-foreground uppercase mb-2">
+                      Message Payload *
+                    </label>
+                    <Textarea
+                      rows={5}
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      placeholder="Describe your multi-tenant auth requirements or deployment timelines..."
+                      className="bg-background border-border text-foreground focus:ring-primary focus:border-primary font-mono text-xs leading-relaxed"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn-primary w-full md:w-auto flex items-center justify-center gap-2 text-xs py-2.5 px-6"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-primary-foreground" />
+                        <span>Transmitting payload...</span>
+                      </>
+                    ) : (
+                      <span>Submit Request</span>
+                    )}
+                  </Button>
+                </form>
+              </div>
+
+              {/* Side Info */}
+              <div className="lg:col-span-5 space-y-6">
+                <div className="border border-border bg-[#050914] p-6 rounded-xl space-y-6 font-mono text-xs">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-primary" />
+                    <div>
+                      <h4 className="font-semibold text-foreground uppercase tracking-wider text-[10px]">Security Team</h4>
+                      <p className="text-muted-foreground font-sans mt-0.5">security@terrasept.com</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 text-primary" />
+                    <div>
+                      <h4 className="font-semibold text-foreground uppercase tracking-wider text-[10px]">Operations Office</h4>
+                      <p className="text-muted-foreground font-sans mt-0.5">+234 (1) 420-8080</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-primary" />
+                    <div>
+                      <h4 className="font-semibold text-foreground uppercase tracking-wider text-[10px]">Response Parameters</h4>
+                      <p className="text-muted-foreground font-sans mt-0.5">Scale & Enterprise tiers responded in &lt;4h.</p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Company</label>
-                  <Input placeholder="Your company" className="bg-secondary border-border" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
-                  <Textarea placeholder="Tell us how we can help..." className="bg-secondary border-border min-h-32" />
-                </div>
-                <Button className="btn-primary w-full">Send Message</Button>
-              </form>
+              </div>
             </div>
+          </div>
+        </section>
+      </main>
 
-            {/* Contact Info */}
-            <div className="space-y-8">
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <Mail className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">Email</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">hello@TSAUTH.com</p>
-              </div>
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <Phone className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">Phone</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
-              </div>
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">Office</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">San Francisco, CA</p>
-              </div>
-              <div className="card-premium">
-                <p className="text-sm font-semibold mb-2">Response time</p>
-                <p className="text-xs text-muted-foreground">We typically respond within 24 hours</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative border-t border-border py-12 md:py-16">
-        <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">PRODUCT</p>
-              <ul className="space-y-2">
-                <li><Link href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Security</Link></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">DEVELOPERS</p>
-              <ul className="space-y-2">
-                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SDKs</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">COMPANY</p>
-              <ul className="space-y-2">
-                <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">LEGAL</p>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a></li>
-                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-10 w-auto" />
-              <span className="text-sm font-bold">TerraSept Auth</span>
-            </div>
-            <p className="text-xs text-muted-foreground">© 2026 TerraSept Auth. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

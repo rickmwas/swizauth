@@ -11,6 +11,7 @@ import Security from "./pages/Security";
 import Documentation from "./pages/Documentation";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
+import Contact from "./pages/Contact";
 
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path={"/docs"} component={Documentation} />
       <Route path={"/about"} component={About} />
       <Route path={"/blog"} component={Blog} />
+      <Route path={"/contact"} component={Contact} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -1,353 +1,511 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Lock, Shield, Users, Zap, Globe, Database, Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getRegisterUrl } from "@/const";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { 
+  ArrowRight, Lock, Shield, Users, Database, Terminal, Code, Copy, CheckSquare, 
+  Cpu, Check, Server, RefreshCw, Key, ShieldAlert 
+} from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { getRegisterUrl } from "@/const";
+
+interface JsonLog {
+  timestamp: string;
+  level: "INFO" | "WARN" | "ERROR";
+  service: "auth-service" | "admin-service";
+  request_id: string;
+  organization_id: string;
+  endpoint: string;
+  status: number;
+  latency_ms: number;
+  message: string;
+}
 
 export default function Home() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [visibleCards, setVisibleCards] = useState([false, false, false]);
+  const [activeTab, setActiveTab] = useState<"next" | "go" | "express" | "fastapi">("next");
+  const [copied, setCopied] = useState(false);
+  const [logs, setLogs] = useState<JsonLog[]>([]);
 
+  // Simulation: Generate realistic JSON logs conforming to code-standards.md
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const generateInitialLogs = () => {
+      const endpoints = [
+        { path: "POST /api/v1/auth/login", service: "auth-service", status: 200, msg: "Session authenticated via Argon2id" },
+        { path: "GET /api/v1/organizations/org_7a8b9c", service: "admin-service", status: 200, msg: "Loaded organization metadata" },
+        { path: "POST /api/v1/auth/refresh", service: "auth-service", status: 200, msg: "Rotated session credentials" },
+        { path: "POST /api/v1/mfa/verify", service: "auth-service", status: 200, msg: "MFA TOTP code verified successfully" }
+      ];
+      
+      const initialLogs: JsonLog[] = Array.from({ length: 4 }).map((_, i) => {
+        const ep = endpoints[i];
+        const date = new Date(Date.now() - (4 - i) * 8000);
+        return {
+          timestamp: date.toISOString(),
+          level: "INFO",
+          service: ep.service as "auth-service" | "admin-service",
+          request_id: `req_${Math.random().toString(36).substring(2, 10)}`,
+          organization_id: "org_7a8b9c6d-5e4f-4a3b-2c1d-0e9f8a7b6c5d",
+          endpoint: ep.path,
+          status: ep.status,
+          latency_ms: Math.floor(Math.random() * 15) + 3,
+          message: ep.msg
+        };
+      });
+      setLogs(initialLogs);
+    };
+
+    generateInitialLogs();
+
+    const interval = setInterval(() => {
+      const liveEndpoints = [
+        { path: "POST /api/v1/auth/login", service: "auth-service", status: 200, msg: "Session authenticated via Argon2id" },
+        { path: "GET /api/v1/organizations/org_7a8b9c", service: "admin-service", status: 200, msg: "Loaded organization metadata" },
+        { path: "POST /api/v1/auth/refresh", service: "auth-service", status: 200, msg: "Rotated session credentials" },
+        { path: "POST /api/v1/mfa/verify", service: "auth-service", status: 200, msg: "MFA TOTP code verified successfully" },
+        { path: "POST /api/v1/api-keys", service: "admin-service", status: 201, msg: "Issued scoped API credential" },
+        { path: "POST /api/v1/auth/login", service: "auth-service", status: 401, msg: "Failed login: invalid credentials" }
+      ];
+
+      const ep = liveEndpoints[Math.floor(Math.random() * liveEndpoints.length)];
+      const newLog: JsonLog = {
+        timestamp: new Date().toISOString(),
+        level: ep.status >= 400 ? "WARN" : "INFO",
+        service: ep.service as "auth-service" | "admin-service",
+        request_id: `req_${Math.random().toString(36).substring(2, 10)}`,
+        organization_id: "org_7a8b9c6d-5e4f-4a3b-2c1d-0e9f8a7b6c5d",
+        endpoint: ep.path,
+        status: ep.status,
+        latency_ms: Math.floor(Math.random() * 20) + 2,
+        message: ep.msg
+      };
+
+      setLogs(prev => [newLog, ...prev.slice(0, 3)]);
+    }, 4500);
+
+    return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setVisibleCards([true, true, true]), 300);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-  const trustBadges = [
-    { icon: <Shield className="w-5 h-5" />, label: "SOC 2", description: "Type II" },
-    { icon: <Lock className="w-5 h-5" />, label: "ISO 27001", description: "Certified" },
-    { icon: <Zap className="w-5 h-5" />, label: "99.99%", description: "Uptime SLA" },
-    { icon: <Globe className="w-5 h-5" />, label: "GDPR", description: "Compliant" },
-    { icon: <Shield className="w-5 h-5" />, label: "Enterprise", description: "Grade" },
-    { icon: <Users className="w-5 h-5" />, label: "Multi-Tenant", description: "Ready" },
-  ];
+  const sdkSnippets = {
+    next: {
+      lang: "typescript",
+      install: "npm install @tsauth/nextjs",
+      desc: "Protect App Router paths using fast Edge middleware session checks.",
+      code: `import { NextResponse } from "next/server";
+import { verifySession } from "@tsauth/nextjs";
 
-  const features = [
-    {
-      icon: <Lock className="w-8 h-8" />,
-      title: "Authentication",
-      description: "Passwordless, SSO, MFA, passkeys. Enterprise-grade sign-in.",
+export async function middleware(req) {
+  // Edge-compatible JWT signature verification (RS256)
+  const session = await verifySession(req);
+  if (!session.isValid) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+  return NextResponse.next();
+}`
     },
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Authorization",
-      description: "Fine-grained access control. Roles, permissions, policies.",
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Organizations",
-      description: "Multi-tenant infrastructure. Manage teams and resources.",
-    },
-  ];
+    go: {
+      lang: "go",
+      install: "go get github.com/terrasept/tsauth-go",
+      desc: "Fast-path token verification middleware for Gin and Chi REST servers.",
+      code: `package main
 
-  const architectureNodes = [
-    { icon: <Users className="w-6 h-6" />, label: "Users" },
-    { icon: <Database className="w-6 h-6" />, label: "Applications" },
-    { icon: <Shield className="w-6 h-6" />, label: "Identity Platform" },
-    { icon: <Lock className="w-6 h-6" />, label: "Policies" },
-    { icon: <Database className="w-6 h-6" />, label: "Resources" },
-  ];
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/terrasept/tsauth-go"
+)
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.GetHeader("Authorization")
+		// Cryptographic local signature validation
+		claims, err := tsauth.VerifyToken(token)
+		if err != nil {
+			c.JSON(401, gin.H{"error": "UNAUTHORIZED"})
+			c.Abort()
+			return
+		}
+		c.Set("org_id", claims.OrgID)
+		c.Next()
+	}
+}`
+    },
+    express: {
+      lang: "javascript",
+      install: "npm install @tsauth/express",
+      desc: "Standard Express middleware backing cookie-based session validation.",
+      code: `const express = require("express");
+const { protectRoute } = require("@tsauth/express");
+const app = express();
+
+// Secure route protection checking local claims & token blacklists
+app.get("/api/v1/dashboard", protectRoute({ 
+  requiredPermissions: ["users.read"] 
+}), (req, res) => {
+  res.json({ data: "Sensitive multi-tenant dashboard assets" });
+});`
+    },
+    fastapi: {
+      lang: "python",
+      install: "pip install tsauth-fastapi",
+      desc: "FastAPI dependency injections for clean authorization and RBAC verification.",
+      code: `from fastapi import FastAPI, Depends
+from tsauth_fastapi import AuthGuard, UserClaims
+
+app = FastAPI()
+# Verify OAuth token credentials and isolate workspace parameters
+auth = AuthGuard(permissions=["audit_logs.read"])
+
+@app.get("/api/v1/audit")
+def read_audit_logs(claims: UserClaims = Depends(auth)):
+    return {"status": "success", "organization": claims.org_id}`
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
-      {/* Navigation */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border" : "bg-transparent"
-        }`}
-      >
-        <div className="container flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-16 w-auto group-hover:opacity-80 transition-opacity duration-300" />
-            <span className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors duration-300">TerraSept Auth</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 hover:after:w-full">
-              Features
-            </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 hover:after:w-full">
-              Pricing
-            </Link>
-            <Link href="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 hover:after:w-full">
-              Security
-            </Link>
-            <Link href="/docs" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 hover:after:w-full">
-              Docs
-            </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors duration-300">
-              About
-            </Link>
-            <a href={getRegisterUrl()}>
-              <Button className="btn-primary">
-                Start Free
-              </Button>
-            </a>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <Header />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 md:pt-40 lg:pt-48 pb-24 md:pb-32 lg:pb-40 overflow-hidden mesh-bg">
-        {/* Mesh Background Nodes */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="mesh-node" />
-          ))}
-        </div>
-        <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left: Content */}
-            <div className="flex flex-col gap-8">
-              <div className="flex flex-col gap-4">
-                <p className="text-small text-primary font-medium">ENTERPRISE IDENTITY</p>
-                <h1 className="text-headline font-bold leading-tight">
-                  Identity Infrastructure.{" "}
-                  <span className="text-primary">Built for Trust.</span>
-                </h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Secure authentication, authorization, and access management at scale. Trusted by enterprises worldwide.
+      <main className="flex-grow pt-20">
+        {/* Section 1: Hero */}
+        <section className="py-24 md:py-32 border-b border-border bg-[#02050c] relative">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-7 flex flex-col gap-6">
+                <p className="text-xs font-mono text-primary font-bold tracking-widest uppercase">
+                  Production Identity Engine
                 </p>
+                <h1 className="text-display font-display font-bold text-foreground">
+                  Multi-tenant Identity.<br />
+                  Engineered for scale.
+                </h1>
+                <p className="text-subheadline text-muted-foreground max-w-xl">
+                  A rigid, database-level partitioned access management system. Secure auth, fine-grained RBAC, TOTP MFA, and scoped credentials matching strict enterprise compliance.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                  <a href={getRegisterUrl()} className="w-full sm:w-auto">
+                    <Button className="btn-primary w-full flex items-center justify-center gap-2">
+                      Get API Access <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </a>
+                  <Link href="/docs" className="w-full sm:w-auto">
+                    <Button className="btn-secondary w-full">
+                      Read System Spec
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <div className="lg:col-span-5 flex flex-col gap-4">
+                <div className="border border-border/80 bg-card rounded-xl p-6 shadow-md shadow-black/5">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
+                    <Terminal className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-mono font-semibold tracking-wider text-muted-foreground uppercase">
+                      Core Operations Engine
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    {[
+                      { title: "Cryptography", val: "Argon2id / RS256 JWT" },
+                      { title: "MFA Verification", val: "TOTP QR Enrollment & Recovery" },
+                      { title: "Tenancy Model", val: "UUIDv7 logical partitioning" },
+                      { title: "Session Driver", val: "Redis session revocation cache" }
+                    ].map((row, idx) => (
+                      <div key={idx} className="flex justify-between items-center text-xs font-mono">
+                        <span className="text-muted-foreground">{row.title}</span>
+                        <span className="text-primary font-semibold">{row.val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2: Tenant Isolation Visualizer */}
+        <section className="py-24 md:py-32 border-b border-border bg-background">
+          <div className="container mx-auto px-6">
+            <div className="max-w-3xl mb-16">
+              <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest mb-3">
+                Strict Isolation Boundaries
+              </p>
+              <h2 className="text-headline font-display font-bold mb-4">
+                Rigid Multi-Tenant Partitioning
+              </h2>
+              <p className="text-body text-muted-foreground">
+                TSAUTH enforces strict security separation via database-level partitioning. Every data access maps to a distinct identifier (`organization_id`), guaranteeing zero cross-tenant leakage.
+              </p>
+            </div>
+
+            {/* Diagram layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch font-mono">
+              {/* Box 1: HTTP Request */}
+              <div className="border border-border bg-[#050914] rounded-xl p-6 flex flex-col justify-between">
+                <div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-3">
+                    01. Inbound Request
+                  </div>
+                  <p className="text-sm font-semibold text-foreground mb-4">
+                    HTTP Request Header
+                  </p>
+                  <pre className="p-4 bg-background rounded-lg border border-border text-[11px] text-foreground/80 overflow-x-auto leading-relaxed">
+                    <code>{`GET /api/v1/users
+Host: api.tsauth.com
+Authorization: Bearer jwt_token
+X-Organization-ID: org_7a8b9c...`}</code>
+                  </pre>
+                </div>
+                <div className="mt-4 text-xs text-muted-foreground">
+                  The client identifies its target tenant scope in the headers.
+                </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* Box 2: Auth engine */}
+              <div className="border border-border bg-[#050914] rounded-xl p-6 flex flex-col justify-between relative">
+                <div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-3">
+                    02. Engine Verification
+                  </div>
+                  <p className="text-sm font-semibold text-foreground mb-4">
+                    Go Auth Engine (Port 8080)
+                  </p>
+                  <div className="space-y-3">
+                    {[
+                      { step: "Signature Verification", desc: "Checks RS256 token validity" },
+                      { step: "Scope Extraction", desc: "Reads claims from JWT sub & org" },
+                      { step: "Blacklist Match", desc: "Queries Redis session memory" }
+                    ].map((s, idx) => (
+                      <div key={idx} className="p-2.5 bg-background rounded border border-border/80 text-[11px]">
+                        <span className="text-primary font-bold">{s.step}: </span>
+                        <span className="text-muted-foreground">{s.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 text-xs text-muted-foreground">
+                  Signature and authorization parameters checked in Go under 2ms.
+                </div>
+              </div>
+
+              {/* Box 3: PostgreSQL Isolated DB */}
+              <div className="border border-border bg-[#050914] rounded-xl p-6 flex flex-col justify-between">
+                <div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-3">
+                    03. Database Boundary
+                  </div>
+                  <p className="text-sm font-semibold text-foreground mb-4">
+                    PostgreSQL Schema Separation
+                  </p>
+                  <pre className="p-4 bg-background rounded-lg border border-border text-[11px] text-foreground/80 overflow-x-auto leading-relaxed">
+                    <code>{`SELECT * FROM auth.users
+WHERE organization_id = $1
+  AND email = $2
+  AND deleted_at IS NULL;`}</code>
+                  </pre>
+                </div>
+                <div className="mt-4 text-xs text-muted-foreground">
+                  Enforces strict tenant query isolation boundaries inside the database layer.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Live JSON Activity Monitor */}
+        <section className="py-24 md:py-32 border-b border-border bg-[#02050c]">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-5 flex flex-col gap-6">
+                <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest">
+                  Operational Traceability
+                </p>
+                <h2 className="text-headline font-display font-bold">
+                  Immutable Security Audit Trails
+                </h2>
+                <p className="text-body text-muted-foreground">
+                  TSAUTH records every important authentication event. Logs output in standard JSON format containing request traces, user contexts, endpoint latency, and status parameters.
+                </p>
+                <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+                  <div className="p-3 border border-border/80 rounded-lg bg-card">
+                    <span className="block text-muted-foreground uppercase tracking-wider text-[10px] mb-1">Logging Format</span>
+                    <b className="text-foreground">Structured JSON</b>
+                  </div>
+                  <div className="p-3 border border-border/80 rounded-lg bg-card">
+                    <span className="block text-muted-foreground uppercase tracking-wider text-[10px] mb-1">Target Sink</span>
+                    <b className="text-foreground">Stdout stream</b>
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulated Live Console */}
+              <div className="lg:col-span-7">
+                <div className="border border-border/80 bg-black rounded-xl overflow-hidden shadow-2xl">
+                  <div className="flex items-center justify-between px-4 py-3 bg-[#080d19] border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping" />
+                      <span className="text-[10px] font-mono font-semibold tracking-wider text-muted-foreground uppercase">
+                        Stdout Log stream
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      Service status: Active
+                    </span>
+                  </div>
+                  <div className="p-4 md:p-6 space-y-3 max-h-[360px] overflow-y-auto font-mono text-[10px] leading-relaxed">
+                    {logs.map((log) => (
+                      <div key={log.timestamp} className="p-3 bg-[#060a12] border border-border/60 rounded-lg text-muted-foreground">
+                        <span className="text-primary font-bold">{"{"}</span>
+                        <div className="pl-4">
+                          <span className="text-primary">"timestamp"</span>: <span className="text-green-400">"{log.timestamp}"</span>, <br />
+                          <span className="text-primary">"level"</span>: <span className="text-green-400">"{log.level}"</span>, <br />
+                          <span className="text-primary">"service"</span>: <span className="text-green-400">"{log.service}"</span>, <br />
+                          <span className="text-primary">"endpoint"</span>: <span className="text-green-400">"{log.endpoint}"</span>, <br />
+                          <span className="text-primary">"status"</span>: <span className="text-amber-500">{log.status}</span>, <br />
+                          <span className="text-primary">"latency_ms"</span>: <span className="text-amber-500">{log.latency_ms}</span>, <br />
+                          <span className="text-primary">"message"</span>: <span className="text-green-400">"{log.message}"</span>
+                        </div>
+                        <span className="text-primary font-bold">{"}"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4: Zero-Friction SDKs */}
+        <section className="py-24 md:py-32 border-b border-border bg-background">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+              <div className="lg:col-span-5 flex flex-col gap-6">
+                <div>
+                  <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest mb-3">
+                    Developer Integration
+                  </p>
+                  <h2 className="text-headline font-display font-bold">
+                    Official SDK Ecosystem
+                  </h2>
+                </div>
+                <p className="text-body text-muted-foreground">
+                  Connect your codebase in minutes using native, officially supported libraries. TSAUTH handles local session caching, JWT cryptography validation, and protected routes.
+                </p>
+
+                {/* Tabs selection buttons */}
+                <div className="flex flex-col gap-3 font-mono">
+                  {(Object.keys(sdkSnippets) as Array<keyof typeof sdkSnippets>).map((key) => {
+                    const active = activeTab === key;
+                    const names = { next: "Next.js SDK", go: "Go Identity Driver", express: "Express Driver", fastapi: "FastAPI Module" };
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setActiveTab(key)}
+                        className={`text-left p-3 rounded-lg border text-xs transition-colors cursor-pointer ${
+                          active
+                            ? "border-primary/50 bg-[#080e1e] text-foreground font-semibold"
+                            : "border-border hover:bg-[#060a14] text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {names[key]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Code display block */}
+              <div className="lg:col-span-7 bg-card border border-border rounded-xl shadow-xl overflow-hidden font-mono">
+                <div className="flex items-center justify-between px-5 py-3 bg-[#080e1e] border-b border-border">
+                  <span className="text-xs text-muted-foreground font-bold">
+                    {sdkSnippets[activeTab].install}
+                  </span>
+                  <button
+                    onClick={() => handleCopy(sdkSnippets[activeTab].code)}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    {copied ? <CheckSquare className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                <div className="p-5 text-[11px] md:text-xs leading-relaxed overflow-x-auto bg-[#040710] border-b border-border text-primary font-bold">
+                  {sdkSnippets[activeTab].desc}
+                </div>
+                <pre className="p-5 md:p-6 text-[11px] md:text-xs overflow-x-auto text-foreground/90 bg-[#020408] leading-relaxed">
+                  <code>{sdkSnippets[activeTab].code}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 5: Security Architecture Specifications */}
+        <section className="py-24 md:py-32 border-b border-border bg-[#02050c]">
+          <div className="container mx-auto px-6">
+            <div className="max-w-3xl mb-16">
+              <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest mb-3">
+                Hardened Infrastructure
+              </p>
+              <h2 className="text-headline font-display font-bold mb-4">
+                Architected for High Security
+              </h2>
+              <p className="text-body text-muted-foreground">
+                Security is our primary concern. TSAUTH implements modern cryptographic standards and network policies to protect enterprise identity vectors.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono">
+              {[
+                { icon: <Cpu className="w-5 h-5" />, title: "Argon2id Pw Hash", desc: "Parameters: m=65536, t=3, p=4. Resistance to GPU brute force." },
+                { icon: <Lock className="w-5 h-5" />, title: "RS256 JWT Signed", desc: "Tokens signed utilizing asymmetric private keys, with 15-minute expirations." },
+                { icon: <RefreshCw className="w-5 h-5" />, title: "Rotating Refreshes", desc: "Hashed refresh tokens stored in DB with rotating cycles and 30-day life." },
+                { icon: <Key className="w-5 h-5" />, title: "AES-256-GCM rest", desc: "Sensitive parameters (MFA secrets, API keys) encrypted at-rest using AES-256." },
+                { icon: <Server className="w-5 h-5" />, title: "Token rate limiter", desc: "Redis-backed bucket rate limit: Login 10 req/min, Signup 5 req/min." },
+                { icon: <ShieldAlert className="w-5 h-5" />, title: "TLS 1.3 Strict", desc: "Mandatory HTTPS, HSTS, Secure cookies, CSRF boundaries, and CORS whitelist." }
+              ].map((item, idx) => (
+                <div key={idx} className="border border-border bg-[#050914] p-6 rounded-xl hover:border-primary/30 transition-colors">
+                  <div className="flex items-center gap-3 mb-3 text-primary">
+                    {item.icon}
+                    <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Section 6: Enterprise CTA */}
+        <section className="py-24 md:py-32 bg-background">
+          <div className="container mx-auto px-6">
+            <div className="border border-border/80 bg-[#02050c] rounded-2xl p-10 md:p-16 text-center max-w-4xl mx-auto shadow-2xl">
+              <h2 className="text-headline font-display font-bold mb-4">
+                Secure your enterprise platform identity
+              </h2>
+              <p className="text-body text-muted-foreground mb-8 max-w-xl mx-auto">
+                Join engineering teams deploying secure, isolated multi-tenant workspaces, fine-grained access policies, and audited credential verification.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href={getRegisterUrl()} className="w-full sm:w-auto">
-                  <Button className="btn-primary w-full">
-                    Start Free <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button className="btn-primary w-full flex items-center justify-center gap-2">
+                    Start Integration <ArrowRight className="w-4 h-4" />
                   </Button>
                 </a>
-                <Link href="/docs" className="w-full sm:w-auto">
+                <Link href="/contact" className="w-full sm:w-auto">
                   <Button className="btn-secondary w-full">
-                    View Docs
+                    Schedule Security Audit
                   </Button>
                 </Link>
               </div>
-
-              <div className="flex items-center gap-6 pt-4">
-                <div className="w-full">
-                  <p className="text-xs text-muted-foreground font-medium mb-4">TRUSTED BY LEADING ENTERPRISES</p>
-                  <div className="flex flex-wrap gap-6 md:gap-8 items-center">
-                    <img src="/manus-storage/bauMrKKjwTwI_0de0323f.png" alt="AWS" className="h-8 md:h-10 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
-                    <img src="/manus-storage/G44e5dgn6bMv_4f466245.png" alt="Microsoft Azure" className="h-8 md:h-10 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
-                    <img src="/manus-storage/s253XvMTYFEY_04d62fad.jpg" alt="Google Cloud" className="h-8 md:h-10 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
-                    <img src="/manus-storage/oF76CR2QIMbN_fe6cd5da.png" alt="Linode" className="h-8 md:h-10 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
-                    <img src="/manus-storage/Lttw1Cnmj67L_52f94a11.png" alt="OpenAI" className="h-8 md:h-10 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
-                    <img src="/manus-storage/S39Gt5TW8Auo_954b02fa.png" alt="Lenovo" className="h-8 md:h-10 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Hero Visual */}
-            <div className="relative h-96 md:h-full min-h-96 animate-fade-in group">
-              <img
-                src="/manus-storage/ChatGPTImageJun9,2026,11_24_27PM(1)_bb2f3565.png"
-                alt="Security Infrastructure"
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-              />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Trust Badges */}
-      <section className="relative py-20 md:py-28 lg:py-32 border-t border-border mesh-bg">
-        {/* Mesh Background Nodes */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="mesh-node" />
-          ))}
-        </div>
-        <div className="container">
-          <div className="flex flex-col gap-12">
-            <div className="flex flex-col gap-2">
-              <p className="text-small text-primary font-medium">COMPLIANCE</p>
-              <h2 className="text-headline">Enterprise-Grade Security</h2>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-              {trustBadges.map((badge, idx) => (
-                <div
-                  key={idx}
-                  className="group card-premium text-center hover:border-primary/50 hover:bg-secondary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer"
-                  style={{
-                    animation: `fade-in-up 0.6s ease-out ${idx * 80}ms backwards`,
-                  }}
-                >
-                  <div className="flex justify-center mb-3 text-primary group-hover:scale-125 group-hover:text-primary transition-all duration-300">
-                    {badge.icon}
-                  </div>
-                  <p className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors duration-300">{badge.label}</p>
-                  <p className="text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-colors duration-300">{badge.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="relative py-20 md:py-28 lg:py-32 mesh-bg">
-        {/* Mesh Background Nodes */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(7)].map((_, i) => (
-            <div key={i} className="mesh-node" />
-          ))}
-        </div>
-        <div className="container">
-          <div className="flex flex-col gap-12">
-            <div className="flex flex-col gap-2">
-              <p className="text-small text-primary font-medium">CORE CAPABILITIES</p>
-              <h2 className="text-headline">Built for Developers</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
-              {features.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className={`card-premium group transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30 cursor-pointer ${
-                    visibleCards[idx] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-                  }`}
-                >
-                  <div className="mb-6 group-hover:text-primary group-hover:scale-110 transition-all duration-300">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-4 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-300">{feature.description}</p>
-                  <div className="mt-6 flex items-center gap-2 text-primary opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300">
-                    <span className="text-sm font-medium">Learn more</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Architecture Section */}
-      <section className="relative py-20 md:py-28 lg:py-32 border-t border-border mesh-bg">
-        {/* Mesh Background Nodes */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="mesh-node" />
-          ))}
-        </div>
-        <div className="container">
-          <div className="flex flex-col gap-12">
-            <div className="flex flex-col gap-2">
-              <p className="text-small text-primary font-medium">INFRASTRUCTURE</p>
-              <h2 className="text-headline">Secure by Design</h2>
-            </div>
-
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-2">
-              {architectureNodes.map((node, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-3 flex-1 group">
-                  <div className="w-16 h-16 bg-secondary border border-border rounded-lg flex items-center justify-center text-primary hover:border-primary hover:bg-secondary/80 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 group-hover:scale-110 cursor-pointer">
-                    {node.icon}
-                  </div>
-                  <p className="text-sm font-medium text-center group-hover:text-primary transition-colors duration-300">{node.label}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-12 pt-8 border-t border-border">
-              {[
-                { icon: <Zap className="w-5 h-5" />, label: "Real-time Processing" },
-                { icon: <Globe className="w-5 h-5" />, label: "Global Edge Network" },
-                { icon: <Lock className="w-5 h-5" />, label: "End-to-end Encryption" },
-                { icon: <Database className="w-5 h-5" />, label: "Audit Logs" },
-                { icon: <Shield className="w-5 h-5" />, label: "High Availability" },
-                { icon: <Check className="w-5 h-5" />, label: "Immutable Records" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 group cursor-pointer p-2 rounded-lg hover:bg-secondary/50 transition-all duration-300">
-                  <div className="text-primary group-hover:scale-125 group-hover:text-primary transition-transform duration-300">{item.icon}</div>
-                  <span className="text-sm font-medium group-hover:text-primary transition-colors duration-300">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-20 md:py-28 lg:py-32">
-        <div className="container">
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-12 md:p-16 text-center hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all duration-500 group">
-            <h2 className="text-headline mb-4 group-hover:text-primary transition-colors duration-300">Ready to get started?</h2>
-            <p className="text-subheadline text-muted-foreground mb-8 max-w-2xl mx-auto group-hover:text-foreground transition-colors duration-300">
-              Join enterprises securing their infrastructure with TerraSept Auth.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={getRegisterUrl()}>
-                <Button className="btn-primary">
-                  Start Free <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </a>
-              <Link href="/contact">
-                <Button className="btn-secondary">
-                  Schedule Demo
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative border-t border-border py-12 md:py-16">
-        <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">PRODUCT</p>
-              <ul className="space-y-2">
-                <li><Link href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Security</Link></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">DEVELOPERS</p>
-              <ul className="space-y-2">
-                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SDKs</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">COMPANY</p>
-              <ul className="space-y-2">
-                <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">LEGAL</p>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a></li>
-                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-10 w-auto" />
-              <span className="text-sm font-bold">TerraSept Auth</span>
-            </div>
-            <p className="text-xs text-muted-foreground">© 2026 TerraSept Auth. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

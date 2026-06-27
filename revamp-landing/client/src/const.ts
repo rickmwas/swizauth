@@ -6,9 +6,7 @@ export const getDashboardUrl = () => {
   if (portalUrl) {
     return portalUrl.replace(/\/$/, "");
   }
-  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
-    return "http://localhost:3000";
-  }
+  // Force production dashboard portal URL to prevent localhost redirect 404s
   return "https://tsauth-dashboard.vercel.app";
 };
 

@@ -12,6 +12,8 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Outfit", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -47,46 +49,75 @@
 }
 
 :root {
-  /* Premium Orange Accent */
+  --radius: 0.5rem;
+  
+  /* HSL Orange Design System Light Mode */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
   --primary: #ff6b00;
   --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #fff7ed;
+  --accent-foreground: #7c2d12;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #ff6b00;
+
   --sidebar-primary: #ff6b00;
   --sidebar-primary-foreground: #ffffff;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-accent: #fff7ed;
+  --sidebar-accent-foreground: #7c2d12;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #ff6b00;
+  
   --chart-1: #ff6b00;
   --chart-2: #ff8533;
   --chart-3: #ffa366;
   --chart-4: #ffb380;
   --chart-5: #ffc299;
-  --radius: 0.5rem;
-  
-  /* Lighter Theme - Premium Grey Background */
-  --background: #efefef;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --secondary: #e8e8e8;
-  --secondary-foreground: #333333;
-  --muted: #d9d9d9;
-  --muted-foreground: #666666;
-  --accent: #ff6b00;
-  --accent-foreground: #ffffff;
-  --destructive: #ff4444;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --input: rgba(0, 0, 0, 0.05);
-  --ring: #ff6b00;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-accent: #ff6b00;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(0, 0, 0, 0.08);
-  --sidebar-ring: #ff6b00;
 }
 
 .dark {
-  /* Already using dark theme by default in :root */
+  /* HSL Orange Design System Dark Mode (Default) */
+  --background: #030712;
+  --foreground: #e2e8f0;
+  --card: #080e1e;
+  --card-foreground: #e2e8f0;
+  --popover: #060b18;
+  --popover-foreground: #e2e8f0;
+  --primary: #ff6b00;
+  --primary-foreground: #ffffff;
+  --secondary: #0f172a;
+  --secondary-foreground: #e2e8f0;
+  --muted: #0f172a;
+  --muted-foreground: #94a3b8;
+  --accent: #2d1300;
+  --accent-foreground: #ffd8bf;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #f8fafc;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #ff6b00;
+
+  --sidebar-primary: #ff6b00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar: #080e1e;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-accent: #2d1300;
+  --sidebar-accent-foreground: #ffd8bf;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #ff6b00;
 }
 
 @layer base {
@@ -151,7 +182,7 @@
   
   /* Premium Card Styles */
   .card-premium {
-    @apply bg-card text-card-foreground rounded-lg border border-border p-8 transition-all duration-300 hover:shadow-lg;
+    @apply bg-card/65 backdrop-blur-md text-card-foreground rounded-xl border border-border p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:translate-y-[-2px];
   }
   
   /* Premium Typography */

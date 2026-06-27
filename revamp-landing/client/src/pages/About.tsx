@@ -1,180 +1,133 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Lock } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getRegisterUrl } from "@/const";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Award, Shield, Target, Activity, Heart, ArrowRight } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { getRegisterUrl } from "@/const";
 
 export default function About() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const values = [
+    {
+      icon: <Shield className="w-5 h-5" />,
+      title: "Security Integrity First",
+      desc: "We verify and encrypt sensitive parameters at-rest and in-transit. Security is the main product, not a marketing checkbox."
+    },
+    {
+      icon: <Award className="w-5 h-5" />,
+      title: "Engineering Excellence",
+      desc: "Our codebase implements zero-any TypeScript validation in NestJS and strict panic-recovery HTTP router middleware in Go."
+    },
+    {
+      icon: <Target className="w-5 h-5" />,
+      title: "Isolated Boundaries",
+      desc: "Multi-tenant logic is integrated at the lowest database layer using unique constraints, separating organizations cleanly."
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
-      {/* Navigation */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border" : "bg-transparent"
-        }`}
-      >
-        <div className="container flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-16 w-auto group-hover:opacity-80 transition-opacity duration-300" />
-            <span className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors duration-300">TerraSept Auth</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Features</Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Pricing</Link>
-            <Link href="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Security</Link>
-            <Link href="/docs" className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Docs</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/about" className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-primary">About</Link>
-            <a href={getRegisterUrl()}>
-              <Button className="btn-primary">Start Free</Button>
-            </a>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <Header />
 
-      {/* Hero */}
-      <section className="relative pt-32 md:pt-40 lg:pt-48 pb-24 md:pb-32">
-        <div className="container">
-          <div className="max-w-3xl">
-            <p className="text-small text-primary font-medium mb-4">ABOUT</p>
-            <h1 className="text-headline font-bold mb-6">Building identity infrastructure for the modern web</h1>
-            <p className="text-lg text-muted-foreground">
-              TerraSept Auth was founded to solve the identity crisis in modern applications. We believe every developer deserves enterprise-grade authentication and authorization.
+      <main className="flex-grow pt-20">
+        {/* Section 1: Hero */}
+        <section className="py-20 md:py-28 border-b border-border bg-[#02050c] relative">
+          <div className="container mx-auto px-6 max-w-3xl">
+            <p className="text-xs font-mono text-primary font-bold uppercase tracking-widest mb-3">
+              About the Company
+            </p>
+            <h1 className="text-display font-display font-bold text-foreground mb-6">
+              Production Identity Infrastructure
+            </h1>
+            <p className="text-subheadline text-muted-foreground">
+              TSAUTH was engineered to solve B2B multi-tenancy access problems. We serve high-performance auth routines to secure business operations globally.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Mission */}
-      <section className="relative py-20 md:py-28 border-t border-border">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Our Mission</h2>
-              <p className="text-muted-foreground mb-4">
-                We're building the identity infrastructure that powers the next generation of applications. From startups to enterprises, every team deserves access to world-class authentication and authorization.
-              </p>
-              <p className="text-muted-foreground">
-                Our platform is designed to be secure by default, easy to implement, and scalable to any size.
-              </p>
-            </div>
-            <div className="card-premium">
-              <p className="text-lg font-semibold mb-4">By the numbers</p>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-3xl font-bold text-primary">500K+</p>
-                  <p className="text-sm text-muted-foreground">Users secured daily</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">99.99%</p>
-                  <p className="text-sm text-muted-foreground">Uptime guarantee</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">150+</p>
-                  <p className="text-sm text-muted-foreground">Enterprise customers</p>
-                </div>
+        {/* Section 2: Core Engineering Standards */}
+        <section className="py-24 border-b border-border bg-background">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-headline font-display font-bold mb-6">
+                  Engineered for Operational Stability
+                </h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 font-sans">
+                  Identity systems cannot afford downtime. TSAUTH separating management CRUD interfaces (NestJS admin-service on port 3001) from core token verification (Go auth-service on port 8080) guarantees that authentication checks keep running even during administrative updates.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed font-sans">
+                  We deploy our Go core across multiple availability zones using fast database connection pools, reducing identity verification overhead to under 2ms.
+                </p>
+              </div>
+
+              {/* Specs boxes */}
+              <div className="space-y-6">
+                {[
+                  { num: "99.99%", title: "Operational Uptime SLA", desc: "Contractually backed availability parameters for enterprise tier accounts." },
+                  { num: "2ms", title: "Identity Validation Latency", desc: "Fast-path RS256 token verification utilizing local claims verification." },
+                  { num: "Zero-Any", title: "TypeScript Implementation", desc: "Strict null checks and DTO structures guarding APIs." }
+                ].map((stat, idx) => (
+                  <div key={idx} className="border border-border bg-[#050914] p-5 rounded-xl font-mono text-xs flex gap-5 items-start">
+                    <div className="text-2xl font-bold text-primary">{stat.num}</div>
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-1">{stat.title}</h4>
+                      <p className="text-muted-foreground font-sans text-xs">{stat.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Values */}
-      <section className="relative py-20 md:py-28 border-t border-border">
-        <div className="container">
-          <h2 className="text-2xl font-bold mb-12">Our Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: "Security First", desc: "Every decision is made with security in mind" },
-              { title: "Developer Friendly", desc: "Simple APIs that developers love to use" },
-              { title: "Transparent", desc: "Open about our practices and limitations" },
-            ].map((value, idx) => (
-              <div key={idx} className="card-premium">
-                <h3 className="text-lg font-bold mb-2">{value.title}</h3>
-                <p className="text-sm text-muted-foreground">{value.desc}</p>
+        {/* Section 3: Engineering Core Values */}
+        <section className="py-24 border-b border-border bg-[#02050c]">
+          <div className="container mx-auto px-6">
+            <h2 className="text-headline font-display font-bold mb-12 text-center">
+              System Architecture Principles
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {values.map((val, idx) => (
+                <div key={idx} className="border border-border bg-background p-6 rounded-xl hover:border-primary/30 transition-colors">
+                  <div className="text-primary mb-4">
+                    {val.icon}
+                  </div>
+                  <h3 className="text-base font-display font-bold text-foreground mb-3">{val.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-mono">{val.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4: CTA */}
+        <section className="py-24 bg-background">
+          <div className="container mx-auto px-6">
+            <div className="border border-border/80 bg-[#02050c] rounded-2xl p-10 md:p-16 text-center max-w-4xl mx-auto shadow-2xl">
+              <h2 className="text-headline font-display font-bold mb-4">
+                Partner with security infrastructure specialists
+              </h2>
+              <p className="text-body text-muted-foreground mb-8 max-w-xl mx-auto">
+                Read our cryptographic implementation documentation or get started immediately inside our sandbox developer environment.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href={getRegisterUrl()} className="w-full sm:w-auto">
+                  <Button className="btn-primary w-full flex items-center justify-center gap-2">
+                    Create Sandbox Account <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </a>
+                <Link href="/docs" className="w-full sm:w-auto">
+                  <Button className="btn-secondary w-full">
+                    Read Developer Specs
+                  </Button>
+                </Link>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* CTA */}
-      <section className="relative py-20 md:py-28 border-t border-border">
-        <div className="container">
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-12 md:p-16 text-center">
-            <h2 className="text-headline mb-4">Join us on our mission</h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              We're hiring talented engineers and designers. Help us build the future of identity.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/contact">
-                <Button className="btn-primary">
-                  View Careers <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button className="btn-secondary">Contact Us</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative border-t border-border py-12 md:py-16">
-        <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">PRODUCT</p>
-              <ul className="space-y-2">
-                <li><Link href="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Security</Link></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">DEVELOPERS</p>
-              <ul className="space-y-2">
-                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SDKs</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">COMPANY</p>
-              <ul className="space-y-2">
-                <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-primary mb-4">LEGAL</p>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a></li>
-                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <img src="/manus-storage/ChatGPTImageJun10,2026,12_12_00AM_0a66c4f7.png" alt="TerraSept Auth" className="h-10 w-auto" />
-              <span className="text-sm font-bold">TerraSept Auth</span>
-            </div>
-            <p className="text-xs text-muted-foreground">© 2026 TerraSept Auth. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
